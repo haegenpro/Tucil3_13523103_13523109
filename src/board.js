@@ -1,19 +1,21 @@
 class Car {
 
-  constructor(id, row, col, length, orientation, isTarget = false) {
-    this.id = id;
-    this.row = row;
-    this.col = col;
-    this.length = length;
-    this.orientation = orientation;
-    this.isTarget = isTarget;
-  }
+    constructor(id, row, col, length, orientation, isTarget = false) {
+        this.id = id;
+        this.row = row;
+        this.col = col;
+        this.length = length;
+        this.orientation = orientation;
+        this.isTarget = isTarget;
+    }
 }
 
 class Board {
-    constructor(size, cars = []) {
+
+    constructor(size, cars = [], exitPos) {
         this.size = size;
         this.cars = cars;
+        this.exit = exitPos;
         this.grid = this._createGrid();
         this._placeCars();
     }
@@ -43,17 +45,41 @@ class Board {
     moveCar(id, delta) {
         const car = this.cars.find(c => c.id === id);
         if (!car) throw new Error(`No car with id ${id}`);
-        if (car.orientation === 'H') {
-        car.col += delta;
-        } else {
-        car.row += delta;
-        }
+        if (car.orientation === 'H') car.col += delta;
+        else car.row += delta;
         this._placeCars();
     }
 
     isGoal() {
         const target = this.cars.find(c => c.isTarget);
-        return target && target.col + target.length === this.size;
+        if (!target || target.orientation !== 'H') return false;
+        const frontCol = target.col + target.length - 1;
+        return (
+        target.row === this.exit.row &&
+        frontCol === this.exit.col
+        );
+    }
+
+    heuristic() {
+        const target = this.cars.find(c => c.isTarget);
+        if (!target) throw new Error('Cannot compute heuristic: no target car');
+        const frontCol = target.col + target.length - 1;
+        return this.exit.col - frontCol;
+    }
+
+    countBlockers() {
+        const target = this.cars.find(c => c.isTarget);
+        const row = target.row;
+        const start = target.col + target.length;
+        let blockers = 0;
+        for (let c = start; c <= this.exit.col; c++) {
+        if (this.grid[row][c]) blockers++;
+        }
+        return blockers;
+    }
+
+    getHeuristic() {
+        return this.heuristic() + this.countBlockers();
     }
 
     clone() {
@@ -61,19 +87,23 @@ class Board {
         ({ id, row, col, length, orientation, isTarget }) =>
             new Car(id, row, col, length, orientation, isTarget)
         );
-        return new Board(this.size, carsCopy);
+        return new Board(this.size, carsCopy, { ...this.exit });
     }
 
     serialize() {
         return this.cars
         .map(c => `${c.id}:${c.row},${c.col}`)
         .sort()
-        .join("|");
+        .join('|');
     }
-    getSuccessors() {
-    const successors = [];
 
-    this.cars.forEach(car => {
+    equals(other) {
+        return this.serialize() === other.serialize();
+    }
+
+    getSuccessors() {
+        const successors = [];
+        this.cars.forEach(car => {
         let step = -1;
         while (true) {
             const next = this.clone();
@@ -96,9 +126,38 @@ class Board {
             break;
             }
         }
-    });
+        });
+        return successors;
+    }
 
-    return successors;
+    getSuccessorMoves() {
+        const result = [];
+        this.cars.forEach(car => {
+        let step = -1;
+        while (true) {
+            const next = this.clone();
+            try {
+            next.moveCar(car.id, step);
+            result.push({ board: next, move: { id: car.id, delta: step } });
+            step--;
+            } catch {
+            break;
+            }
+        }
+        step = 1;
+        while (true) {
+            const next = this.clone();
+            try {
+            next.moveCar(car.id, step);
+            result.push({ board: next, move: { id: car.id, delta: step } });
+            step++;
+            } catch {
+            break;
+            }
+        }
+        });
+        return result;
     }
 }
+
 module.exports = { Car, Board };
