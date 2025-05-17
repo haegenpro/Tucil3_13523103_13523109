@@ -1,4 +1,7 @@
-function uniformedCostSearch(startBoard, goalBoard) {
+import { PriorityQueue } from './priorityqueue.js';
+import { Node } from './node.js';
+
+export function uniformedCostSearch(startBoard, goalBoard) {
     const start = new Node(startBoard);
     const goalKey = new Node(goalBoard).serialize();
 
@@ -23,7 +26,7 @@ function uniformedCostSearch(startBoard, goalBoard) {
     return null;
 }
 
-function greedyBestFirstSearch(startBoard, goalBoard) {
+export function greedyBestFirstSearch(startBoard, goalBoard) {
     const start = new Node(startBoard);
     const goalKey = new Node(goalBoard).serialize();
 
@@ -48,7 +51,7 @@ function greedyBestFirstSearch(startBoard, goalBoard) {
     return null;
 }
 
-function aStarSearch(startBoard, goalBoard) {
+export function aStarSearch(startBoard, goalBoard) {
     const start = new Node(startBoard);
     const goalKey = new Node(goalBoard).serialize();
 

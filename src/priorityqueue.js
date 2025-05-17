@@ -1,4 +1,4 @@
-class PriorityQueue {
+export class PriorityQueue {
     constructor(comparator = (a, b) => a - b) {
         this._heap = [];
         this._comparator = comparator;
@@ -74,4 +74,3 @@ class PriorityQueue {
         [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
     }
 }
-module.exports = PriorityQueue;

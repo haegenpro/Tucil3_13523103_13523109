@@ -1,4 +1,4 @@
-class Car {
+export class Car {
 
     constructor(id, row, col, length, orientation, isTarget = false) {
         this.id = id;
@@ -10,7 +10,7 @@ class Car {
     }
 }
 
-class Board {
+export class Board {
 
     constructor(size, cars = [], exitPos) {
         this.size = size;
@@ -158,6 +158,43 @@ class Board {
         });
         return result;
     }
-}
 
-module.exports = { Car, Board };
+    printBoard(highlightMove = null) {
+        const RESET = '\x1b[0m';
+        const RED = '\x1b[31m';
+        const GREEN = '\x1b[32m';
+        const CYAN = '\x1b[36m';
+
+        const displayGrid = Array.from({ length: this.size }, () =>
+            Array.from({ length: this.size }, () => '.')
+        );
+
+        this.cars.forEach(car => {
+            for (let offset = 0; offset < car.length; offset++) {
+            const r = car.orientation === 'V' ? car.row + offset : car.row;
+            const c = car.orientation === 'H' ? car.col + offset : car.col;
+
+            let ch = car.id.toUpperCase();
+
+            if (highlightMove && car.id === highlightMove.id) {
+                ch = RED + ch + RESET;
+            } else if (car.isTarget) {
+                ch = GREEN + ch + RESET;
+            }
+            displayGrid[r][c] = ch;
+            }
+        });
+
+        if (
+            this.exit &&
+            this.exit.row >= 0 && this.exit.row < this.size &&
+            this.exit.col >= 0 && this.exit.col < this.size
+        ) {
+            displayGrid[this.exit.row][this.exit.col] = CYAN + 'K' + RESET;
+        }
+
+        const lines = displayGrid.map(row => row.join(''));
+        console.log(lines.join('\n'));
+    }
+
+}

@@ -1,6 +1,4 @@
-import { PriorityQueue } from './priorityQueue.js';
-
-class Node {
+export class Node {
     constructor(board, parent = null, move = null) {
         this.board  = board;
         this.parent = parent;
@@ -32,6 +30,9 @@ class Node {
         return this.board.isGoal();
     }
 
+    printBoard() {
+        return this.board.printBoard();
+    }
     serialize() {
         return this.board.serialize();
     }
