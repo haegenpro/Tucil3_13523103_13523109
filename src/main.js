@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Board, Car, makeCompleteGoalBoard } from './board.js';
-import { uniformedCostSearch, greedyBestFirstSearch, aStarSearch} from './search.js';
+import { uniformCostSearch, greedyBestFirstSearch, aStarSearch} from './search.js';
 
 const inputFile = process.argv[2];
 if (!inputFile) {
@@ -11,14 +11,19 @@ if (!inputFile) {
 const fileContent = fs.readFileSync(inputFile, 'utf-8');
 
 function parseInput(input) {
-    const lines = input.trim().split('\n');
+    const lines = input.trim().split('\n').map(line => line.replace(/\r$/, ''));
     let [A, B] = lines[0].split(' ').map(Number);
     const N = Number(lines[1]);
 
     const boardLines = lines.slice(2);
     let maxRow = boardLines.length;
-    let maxCol = boardLines.length === A ? B + 1 : B;
-
+    let maxCol = B;
+    for (const line of boardLines) {
+        if (line.length > B && (line[B] === 'K' || line[0] === 'K')) {
+            maxCol = B + 1;
+            break;
+        }
+    }
     let exitPos = null;
     let exitOrientation = null;
 
@@ -66,13 +71,8 @@ function parseInput(input) {
         } else {
             rowArr = rawLine.trimStart().split('');
         }
-
-        while (rowArr.length < maxCol) {
-            rowArr.push(' ');
-        }
         grid.push(rowArr);
     }
-
     const carsInfo = {};
     for (let r = 0; r < grid.length; r++) {
         for (let c = 0; c < grid[0].length; c++) {
@@ -94,17 +94,14 @@ function parseInput(input) {
         cars.push(new Car(id, startRow, startCol, length, orientation, isTarget));
     }
 
-    return new Board(grid.length, cars, exitPos);
+    return new Board(grid.length, grid[0].length, cars, exitPos, exitOrientation);
 }
 
 const board = parseInput(fileContent);
 console.log('Papan Awal:');
 board.printBoard();
-/*const goalBoard = makeCompleteGoalBoard(board);
-console.log('Papan Tujuan:');
-console.log(goalBoard.printBoard());
 
-const solutionNode = uniformedCostSearch(board, goalBoard);
+const solutionNode = greedyBestFirstSearch(board);
 
 if (solutionNode) {
     const path = [];
@@ -133,4 +130,4 @@ if (solutionNode) {
     });
 } else {
     console.log('No solution found');
-}*/
+}

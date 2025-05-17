@@ -1,77 +1,159 @@
+// search.js
 import { PriorityQueue } from './priorityqueue.js';
 import { Node } from './node.js';
 
-export function uniformedCostSearch(startBoard, goalBoard) {
-    const start = new Node(startBoard);
-    const goalKey = new Node(goalBoard).serialize();
-
-    const pq = new PriorityQueue();
-    pq.enqueue(start, start.priorityValue());
-
-    const explored = new Set();
-
-    while (!pq.isEmpty()) {
-        const current = pq.dequeue();
-        if (current.serialize() === goalKey) return current;
-
-        explored.add(current.serialize());
-
-        for (const neighbor of current.getNeighbors()) {
-            const key = neighbor.serialize();
-            if (!explored.has(key)) {
-                pq.enqueue(neighbor, neighbor.priorityValue());
-            }
-        }
-    }
-    return null;
+function debugLog(...args) {
+  if (process.env.DEBUG) {
+    console.debug('[DEBUG]', ...args);
+  }
 }
 
-export function greedyBestFirstSearch(startBoard, goalBoard) {
-    const start = new Node(startBoard);
-    const goalKey = new Node(goalBoard).serialize();
+/**
+ * Uniform Cost Search (UCS)
+ * Explores nodes by lowest cumulative cost (g).
+ */
+export function uniformCostSearch(startBoard) {
+  const start = new Node(startBoard);
+  const pq = new PriorityQueue((a, b) => a.g - b.g);
+  pq.enqueue(start);
 
-    const pq = new PriorityQueue();
-    pq.enqueue(start, start.h);
+  const explored = new Set();
+  let expansions = 0;
+  const MAX_EXPANSIONS = 100000;
 
-    const explored = new Set();
+  while (!pq.isEmpty()) {
+    const current = pq.dequeue();
+    expansions++;
 
-    while (!pq.isEmpty()) {
-        const current = pq.dequeue();
-        if (current.serialize() === goalKey) return current;
-
-        explored.add(current.serialize());
-
-        for (const neighbor of current.getNeighbors()) {
-            const key = neighbor.serialize();
-            if (!explored.has(key)) {
-                pq.enqueue(neighbor, neighbor.h);
-            }
-        }
+    if (expansions > MAX_EXPANSIONS) {
+      console.warn('UCS aborted: max expansions reached');
+      return null;
     }
-    return null;
+
+    debugLog(`UCS Dequeued node g=${current.g} move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
+
+    if (current.isGoal()) {
+      console.log(`UCS goal found after ${expansions} expansions with cost: ${current.g}`);
+      return current;
+    }
+
+    explored.add(current.serialize());
+
+    const neighbors = current.getNeighbors();
+    debugLog(`UCS expanding ${neighbors.length} neighbors`);
+
+    for (const nbr of neighbors) {
+      const key = nbr.serialize();
+      if (!explored.has(key)) {
+        explored.add(key); 
+        pq.enqueue(nbr);
+        debugLog(`UCS Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} g=${nbr.g}`);
+      } else {
+        debugLog(`UCS Skipping explored neighbor: ${key}`);
+      }
+    }
+  }
+
+  console.log('UCS no solution found');
+  return null;
 }
 
-export function aStarSearch(startBoard, goalBoard) {
-    const start = new Node(startBoard);
-    const goalKey = new Node(goalBoard).serialize();
+/**
+ * Greedy Best First Search (GBFS)
+ * Explores nodes by lowest heuristic estimate (h).
+ */
+export function greedyBestFirstSearch(startBoard) {
+  const start = new Node(startBoard);
+  const pq = new PriorityQueue((a, b) => a.h - b.h);
+  pq.enqueue(start);
 
-    const pq = new PriorityQueue();
-    pq.enqueue(start, start.f);
+  const explored = new Set();
+  let expansions = 0;
+  const MAX_EXPANSIONS = 100000;
 
-    const explored = new Set();
+  while (!pq.isEmpty()) {
+    const current = pq.dequeue();
+    expansions++;
 
-    while (!pq.isEmpty()) {
-        const current = pq.dequeue();
-        if (current.serialize() === goalKey) return current;
-
-        explored.add(current.serialize());
-
-        for (const neighbor of current.getNeighbors()) {
-            const key = neighbor.serialize();
-            if (!explored.has(key)) {
-                pq.enqueue(neighbor, neighbor.f);
-            }
-        }
+    if (expansions > MAX_EXPANSIONS) {
+      console.warn('GBFS aborted: max expansions reached');
+      return null;
     }
-    return null;
+
+    debugLog(`GBFS Dequeued node h=${current.h} move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
+
+    if (current.isGoal()) {
+      console.log(`GBFS goal found after ${expansions} expansions with heuristic: ${current.h}`);
+      return current;
+    }
+
+    explored.add(current.serialize());
+
+    const neighbors = current.getNeighbors();
+    debugLog(`GBFS expanding ${neighbors.length} neighbors`);
+
+    for (const nbr of neighbors) {
+      const key = nbr.serialize();
+      if (!explored.has(key)) {
+        explored.add(key); 
+        pq.enqueue(nbr);
+        debugLog(`GBFS Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} h=${nbr.h}`);
+      } else {
+        debugLog(`GBFS Skipping explored neighbor: ${key}`);
+      }
+    }
+  }
+
+  console.log('GBFS no solution found');
+  return null;
+}
+
+/**
+ * A* Search
+ * Explores nodes by lowest f = g + h.
+ */
+export function aStarSearch(startBoard) {
+  const start = new Node(startBoard);
+  const pq = new PriorityQueue((a, b) => a.f - b.f);
+  pq.enqueue(start);
+
+  const explored = new Set();
+  let expansions = 0;
+  const MAX_EXPANSIONS = 100000;
+
+  while (!pq.isEmpty()) {
+    const current = pq.dequeue();
+    expansions++;
+
+    if (expansions > MAX_EXPANSIONS) {
+      console.warn('A* aborted: max expansions reached');
+      return null;
+    }
+
+    debugLog(`A* Dequeued node f=${current.f} (g=${current.g}, h=${current.h}) move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
+
+    if (current.isGoal()) {
+      console.log(`A* goal found after ${expansions} expansions with cost: ${current.g}`);
+      return current;
+    }
+
+    explored.add(current.serialize());
+
+    const neighbors = current.getNeighbors();
+    debugLog(`A* expanding ${neighbors.length} neighbors`);
+
+    for (const nbr of neighbors) {
+      const key = nbr.serialize();
+      if (!explored.has(key)) {
+        explored.add(key); 
+        pq.enqueue(nbr);
+        debugLog(`A* Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} f=${nbr.f} (g=${nbr.g}, h=${nbr.h})`);
+      } else {
+        debugLog(`A* Skipping explored neighbor: ${key}`);
+      }
+    }
+  }
+
+  console.log('A* no solution found');
+  return null;
 }

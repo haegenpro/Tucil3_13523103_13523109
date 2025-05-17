@@ -12,17 +12,19 @@ export class Car {
 
 export class Board {
 
-    constructor(size, cars = [], exitPos) {
-        this.size = size;
+    constructor(height, width, cars = [], exitPos, exitOrientation) {
+        this.height = height;
+        this.width = width;
         this.cars = cars;
         this.exit = exitPos;
+        this.exitOrientation = exitOrientation;
         this.grid = this._createGrid();
         this._placeCars();
     }
 
     _createGrid() {
-        return Array.from({ length: this.size }, () =>
-        Array.from({ length: this.size }, () => null)
+        return Array.from({ length: this.height }, () =>
+        Array.from({ length: this.width }, () => null)
         );
     }
 
@@ -62,24 +64,45 @@ export class Board {
 
     heuristic() {
         const target = this.cars.find(c => c.isTarget);
-        if (!target) throw new Error('Cannot compute heuristic: no target car');
-        const frontCol = target.col + target.length - 1;
-        return this.exit.col - frontCol;
-    }
+        if (!target) throw new Error("No primary car for heuristic");
 
-    countBlockers() {
-        const target = this.cars.find(c => c.isTarget);
-        const row = target.row;
-        const start = target.col + target.length;
-        let blockers = 0;
-        for (let c = start; c <= this.exit.col; c++) {
-        if (this.grid[row][c]) blockers++;
+        let frontIdx, exitIdx, distance, blockers = 0;
+
+        if (this.exitOrientation === 'H') {
+            exitIdx  = this.exit.col;
+            frontIdx = exitIdx < 0
+                ? target.col
+                : target.col + target.length - 1;
+
+            distance = Math.abs(exitIdx - frontIdx);
+
+            const row = target.row;
+            const minC = Math.min(frontIdx, exitIdx);
+            const maxC = Math.max(frontIdx, exitIdx);
+
+            for (let c = minC + 1; c < maxC; c++) {
+                if (this.grid[row][c]) blockers++;
+            }
+        } else {
+            exitIdx  = this.exit.row;
+            frontIdx = exitIdx < 0
+                ? target.row
+                : target.row + target.length - 1;
+
+            distance = Math.abs(exitIdx - frontIdx);
+
+            const col = target.col;
+            const minR = Math.min(frontIdx, exitIdx);
+            const maxR = Math.max(frontIdx, exitIdx);
+            for (let r = minR + 1; r < maxR; r++) {
+                if (this.grid[r][col]) blockers++;
+            }
         }
-        return blockers;
+        return distance + (blockers * 3);
     }
 
     getHeuristic() {
-        return this.heuristic() + this.countBlockers();
+        return this.heuristic();
     }
 
     clone() {
@@ -87,7 +110,19 @@ export class Board {
         ({ id, row, col, length, orientation, isTarget }) =>
             new Car(id, row, col, length, orientation, isTarget)
         );
-        return new Board(this.size, carsCopy, { ...this.exit });
+        return new Board(this.height, this.width, carsCopy, this.exit, this.orientation);
+    }
+
+    reset() {
+        this.cars.forEach(car => {
+            car.row = -1;
+            car.col = -1;
+        });
+        for (let r = 0; r < this.height; r++) {
+            for (let c = 0; c < this.width; c++) {
+                this.grid[r][c] = null;
+            }
+        }
     }
 
     serialize() {
@@ -97,8 +132,24 @@ export class Board {
         .join('|');
     }
 
-    equals(other) {
-        return this.serialize() === other.serialize();
+    isGoal() {
+        const target = this.cars.find(c => c.isTarget);
+        if (!target) return false;
+        let frontIdx, exitIdx;
+        if (this.exitOrientation === 'H') {
+            if (target.orientation !== 'H') return false;
+            frontIdx = exitIdx < 0
+                ? target.col
+                : target.col + target.length - 1;
+            exitIdx = exitIdx < 0 ? 0 : this.exit.col - 1;
+        } else {
+            if (target.orientation !== 'V') return false;
+            frontIdx = exitIdx < 0
+                ? target.row
+                : target.row + target.length - 1;
+            exitIdx = exitIdx < 0 ? 0 : this.exit.row - 1;
+        }
+        return frontIdx === exitIdx && (this.exitOrientation === 'H' ? target.row === this.exit.row : target.col === this.exit.col);
     }
 
     getSuccessors() {
@@ -165,8 +216,8 @@ export class Board {
         const GREEN = '\x1b[32m';
         const CYAN = '\x1b[36m';
 
-        const displayGrid = Array.from({ length: this.size }, () =>
-            Array.from({ length: this.size }, () => '.'));
+        const displayGrid = Array.from({ length: this.height }, () =>
+            Array.from({ length: this.width }, () => '.'));
 
         this.cars.forEach(car => {
             for (let offset = 0; offset < car.length; offset++) {
@@ -184,28 +235,27 @@ export class Board {
                 displayGrid[r][c] = ch;
             }
         });
-
         if (this.exit) {
             if (this.exit.row === -1) {
                 let line = '';
-                for (let c = 0; c < this.size; c++) {
+                for (let c = 0; c < this.width; c++) {
                     line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
                 }
                 console.log(line);
             }
         }
-        for (let r = 0; r < this.size; r++) {
+        for (let r = 0; r < this.height; r++) {
             let line = '';
             if (this.exit) {
                 if (this.exit.col === -1) {
                     r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' ';
                 }
             }
-            for (let c = 0; c < this.size; c++) {
+            for (let c = 0; c < this.width; c++) {
                 line += displayGrid[r][c];
             }
             if (this.exit) {
-                if (this.exit.col === this.size) {
+                if (this.exit.col === this.width) {
                     r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' ';
                 }
             }
@@ -213,9 +263,9 @@ export class Board {
         }
 
         if (this.exit) {
-            if (this.exit.row === this.size) {
+            if (this.exit.row === this.height) {
                 let line = '';
-                for (let c = 0; c < this.size; c++) {
+                for (let c = 0; c < this.width; c++) {
                     line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
                 }
                 console.log(line);
@@ -229,16 +279,15 @@ function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
 
     for (let i = 0; i < carsToPlace.length; i++) {
         const car = carsToPlace[i];
-        const size = board.size;
-        const maxRow = size - (car.orientation === 'V' ? car.length : 1);
-        const maxCol = size - (car.orientation === 'H' ? car.length : 1);
+        const height = board.height;
+        const width = board.width;
+        const maxRow = height - (car.orientation === 'V' ? car.length : 1);
+        const maxCol = width - (car.orientation === 'H' ? car.length : 1);
 
-        // Find all possible valid placements for this car
         const possiblePositions = [];
 
         for (let r = 0; r <= maxRow; r++) {
             for (let c = 0; c <= maxCol; c++) {
-                // Check if can place car at (r, c)
                 let canPlace = true;
                 for (let offset = 0; offset < car.length; offset++) {
                     const rr = car.orientation === 'H' ? r : r + offset;
@@ -267,16 +316,12 @@ function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
                 occupiedGrid[rr][cc] = true;
             }
 
-            // Remove placed car from carsToPlace and restart recursion
             const remainingCars = carsToPlace.slice(0, i).concat(carsToPlace.slice(i + 1));
-            const placedInRest = placeCarsRecursively(board, remainingCars, occupiedGrid);
-            return true; // We placed at least one car, so continue until stable
+            return placeCarsRecursively(board, remainingCars, occupiedGrid);
         }
         // If no unique placement, leave car unplaced (wildcard)
     }
-
-    // If no cars placed in this pass, stop recursion
-    return false;
+    return [board, carsToPlace];
 }
 
 export function makeCompleteGoalBoard(startBoard) {
@@ -284,22 +329,21 @@ export function makeCompleteGoalBoard(startBoard) {
     const targetCar = goalBoard.cars.find(c => c.isTarget);
     if (!targetCar) throw new Error('No target car found');
     const exit = goalBoard.exit;
-
+    console.log(targetCar.row, targetCar.col, targetCar.length, targetCar.orientation);
     // Place target car at exit position -1 (handling edge cases)
     if (targetCar.orientation === 'H') {
         targetCar.row = exit.row;
-        targetCar.col = exit.col === 0 ? 0 : exit.col - (targetCar.length - 1);
+        targetCar.col = exit.col === -1 ? 1 : exit.col - (targetCar.length + 1);
     } else {
         targetCar.col = exit.col;
-        targetCar.row = exit.row === 0 ? 0 : exit.row - (targetCar.length - 1);
+        targetCar.row = exit.row === -1 ? 1 : exit.row - (targetCar.length + 1);
     }
 
     // Prepare occupancy grid
-    const occupiedGrid = Array.from({ length: goalBoard.size }, () =>
-        Array(goalBoard.size).fill(false)
+    const occupiedGrid = Array.from({ length: goalBoard.height }, () =>
+        Array(goalBoard.width).fill(false)
     );
 
-    // Mark target car occupied
     for (let offset = 0; offset < targetCar.length; offset++) {
         const rr = targetCar.orientation === 'H' ? targetCar.row : targetCar.row + offset;
         const cc = targetCar.orientation === 'H' ? targetCar.col + offset : targetCar.col;
