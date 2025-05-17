@@ -1,7 +1,7 @@
 5 4
 4
 AAC.
-..C.
-.PP.K
-D..B
-D..B
+PPCBK
+..CB
+...B
+..DD

@@ -13,7 +13,6 @@ const fileContent = fs.readFileSync(inputFile, 'utf-8');
 
 function parseInput(input) {
     const lines = input.trim().split('\n').map(line => line.replace(/\r$/, ''));
-    // VALIDATION 
     const headerRe = /^\s*(\d+)\s+(\d+)\s*$/;
     const m = headerRe.exec(lines[0]);
     if (!m) {
@@ -28,27 +27,24 @@ function parseInput(input) {
     }
     const N = Number(lines[1]);
 
-    // Tentukan orientasi exit sebelum validasi jumlah baris
     var rawBoard = lines.slice(2); 
     const boardLinesValidate = rawBoard.map(row => row.trim());
     let exitOrientationValidate = null; 
     for (let r = 0; r < rawBoard.length; r++) {
-    const row = rawBoard[r];
-    for (let c = 0; c < row.length; c++) {
-        if (row[c] === 'K') {
-        if (r === 0 || r === A) exitOrientationValidate = 'V';
-        else if (c === 0 || c === B) exitOrientationValidate = 'H';
+        const row = rawBoard[r];
+        for (let c = 0; c < row.length; c++) {
+            if (row[c] === 'K') {
+                if (r === 0 || r === A) exitOrientationValidate = 'V';
+                else if (c === 0 || c === B) exitOrientationValidate = 'H';
+            }
         }
     }
-    }
 
-    // Validasi jumlah baris yang diharapkan (A baris + 1 jika exit vertikal)
     const expectedRows = exitOrientationValidate === 'V' ? A + 1 : A; 
     if (boardLinesValidate.length !== expectedRows) {
         throw new Error(`Diperlukan tepat ${expectedRows} baris konfigurasi papan, tapi ada ${boardLinesValidate.length}.`);
     }
 
-    // Validasi karakter pada baris dan Mengandung K
     const validCharRe = /^[\.A-PR-ZK]+$/; 
     for (let i = 0; i < boardLinesValidate.length; i++) {
         const row = boardLinesValidate[i];   
@@ -72,7 +68,6 @@ function parseInput(input) {
         }
     }
 
-    // Cari posisi kolom K jika vertical
     var cKvertical; 
     if(exitOrientationValidate === 'V') {
         const firstRow  = rawBoard[0]; 
@@ -85,7 +80,6 @@ function parseInput(input) {
         }
     }
 
-    // Ekstraksi posisi 'P' dan 'K' dari yang sudah di Trimmed && Validasi jumlahnya
     const pCoords = [];
     const exitCoords = [];
     for (let r = 0; r < boardLinesValidate.length; r++) {
@@ -108,7 +102,6 @@ function parseInput(input) {
         throw new Error(`Harus tepat 1 exit 'K', tapi ditemukan ${exitCoords.length}.`);
     }
 
-    // Tentukan orientasi P dan validasi orientasinya
     const pRows = new Set(pCoords.map(([r]) => r)); 
     const pCols = new Set(pCoords.map(([, c]) => c));
     let orientation;
@@ -116,7 +109,6 @@ function parseInput(input) {
     else if (pCols.size === 1 && pRows.size > 1) orientation = 'V';
     else throw new Error(`Primary piece 'P' harus membentuk garis lurus horizontal atau vertikal.`);
 
-    // Validasi posisi exit sejajar dengan P dan di dinding
     const [[er, ec]] = exitCoords;
     if (orientation === 'H') {
         const pr = [...pRows][0];
@@ -130,7 +122,6 @@ function parseInput(input) {
         }
     }
 
-    // Bangun grid tanpa 'K' dan baris ekstra
     const gridValidate = []; 
     for (let r = 0; r < boardLinesValidate.length; r++) {
         if (exitOrientationValidate === 'V' && (r === 0 || r === boardLinesValidate.length - 1) && boardLinesValidate[r].includes('K')) continue;
@@ -140,7 +131,6 @@ function parseInput(input) {
         gridValidate.push(rowArr);
     }
 
-    // Validasi jumlah piece non-primary sesuai N
     const uniqueIds = new Set();
     gridValidate.forEach(row => row.forEach(ch => {
         if (ch !== '.' && ch !== 'P') uniqueIds.add(ch);
@@ -149,7 +139,6 @@ function parseInput(input) {
         throw new Error(`N = ${N}, namun terdeteksi ${uniqueIds.size} jenis piece non-primary (${[...uniqueIds].join(',')}).`);
     }
 
-    // Validasi kontigu dan lurusnya piece
     const carsInfoValidate = {}; 
     gridValidate.forEach((row, r) => row.forEach((ch, c) => {
         if (ch === '.') return;
@@ -260,11 +249,17 @@ function parseInput(input) {
     return new Board(grid.length, grid[0].length, cars, exitPos, exitOrientation);
 }
 
+// Start time
+const startTime = Date.now();
+
 const board = parseInput(fileContent);
 console.log('Papan Awal:');
 board.printBoard();
 
-const solutionNode = greedyBestFirstSearch(board);
+const solutionNode = uniformCostSearch(board);
+
+const endTime = Date.now();
+const elapsedTime = endTime - startTime;
 
 if (solutionNode) {
     const path = [];
@@ -291,6 +286,7 @@ if (solutionNode) {
         console.log(`\nGerakan ${i}: ${move.id}-${direction}`);
         node.board.printBoard(move);
     });
+    console.log(`\nTotal time: ${elapsedTime} ms`);
 } else {
     console.log('No solution found');
 }
