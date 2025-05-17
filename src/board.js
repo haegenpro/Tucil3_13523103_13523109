@@ -108,9 +108,9 @@ export class Board {
         while (true) {
             const next = this.clone();
             try {
-            next.moveCar(car.id, step);
-            successors.push(next);
-            step--;
+                next.moveCar(car.id, step);
+                successors.push(next);
+                step--;
             } catch {
             break;
             }
@@ -119,9 +119,9 @@ export class Board {
         while (true) {
             const next = this.clone();
             try {
-            next.moveCar(car.id, step);
-            successors.push(next);
-            step++;
+                next.moveCar(car.id, step);
+                successors.push(next);
+                step++;
             } catch {
             break;
             }
@@ -137,9 +137,9 @@ export class Board {
         while (true) {
             const next = this.clone();
             try {
-            next.moveCar(car.id, step);
-            result.push({ board: next, move: { id: car.id, delta: step } });
-            step--;
+                next.moveCar(car.id, step);
+                result.push({ board: next, move: { id: car.id, delta: step } });
+                step--;
             } catch {
             break;
             }
@@ -148,9 +148,9 @@ export class Board {
         while (true) {
             const next = this.clone();
             try {
-            next.moveCar(car.id, step);
-            result.push({ board: next, move: { id: car.id, delta: step } });
-            step++;
+                next.moveCar(car.id, step);
+                result.push({ board: next, move: { id: car.id, delta: step } });
+                step++;
             } catch {
             break;
             }
@@ -166,35 +166,153 @@ export class Board {
         const CYAN = '\x1b[36m';
 
         const displayGrid = Array.from({ length: this.size }, () =>
-            Array.from({ length: this.size }, () => '.')
-        );
+            Array.from({ length: this.size }, () => '.'));
 
         this.cars.forEach(car => {
             for (let offset = 0; offset < car.length; offset++) {
-            const r = car.orientation === 'V' ? car.row + offset : car.row;
-            const c = car.orientation === 'H' ? car.col + offset : car.col;
+                const r = car.orientation === 'V' ? car.row + offset : car.row;
+                const c = car.orientation === 'H' ? car.col + offset : car.col;
 
-            let ch = car.id.toUpperCase();
+                let ch = car.id.toUpperCase();
 
-            if (highlightMove && car.id === highlightMove.id) {
-                ch = RED + ch + RESET;
-            } else if (car.isTarget) {
-                ch = GREEN + ch + RESET;
-            }
-            displayGrid[r][c] = ch;
+                if (highlightMove && car.id === highlightMove.id) {
+                    ch = RED + ch + RESET;
+                } else if (car.isTarget) {
+                    ch = GREEN + ch + RESET;
+                }
+
+                displayGrid[r][c] = ch;
             }
         });
 
-        if (
-            this.exit &&
-            this.exit.row >= 0 && this.exit.row < this.size &&
-            this.exit.col >= 0 && this.exit.col < this.size
-        ) {
-            displayGrid[this.exit.row][this.exit.col] = CYAN + 'K' + RESET;
+        // Print extra line for top or bottom vertical exit
+        if (this.exit) {
+            if (this.exit.row === -1) { // top edge
+                let line = '';
+                for (let c = 0; c < this.size; c++) {
+                    line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
+                }
+                console.log(line);
+            }
         }
 
-        const lines = displayGrid.map(row => row.join(''));
-        console.log(lines.join('\n'));
+        // Print each grid row with possible left/right horizontal exit
+        for (let r = 0; r < this.size; r++) {
+            let line = '';
+            if (this.exit) {
+                if (this.exit.col === -1) {
+                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' '; // left exit
+                }
+            }
+            for (let c = 0; c < this.size; c++) {
+                line += displayGrid[r][c];
+            }
+            if (this.exit) {
+                if (this.exit.col === this.size) {
+                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' '; // right exit
+                }
+            }
+            console.log(line);
+        }
+
+        if (this.exit) {
+            if (this.exit.row === this.size) { // bottom edge
+                let line = '';
+                for (let c = 0; c < this.size; c++) {
+                    line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
+                }
+                console.log(line);
+            }
+        }
+    }
+}
+
+function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
+    let placedAny = false;
+
+    for (let i = 0; i < carsToPlace.length; i++) {
+        const car = carsToPlace[i];
+        const size = board.size;
+        const maxRow = size - (car.orientation === 'V' ? car.length : 1);
+        const maxCol = size - (car.orientation === 'H' ? car.length : 1);
+
+        // Find all possible valid placements for this car
+        const possiblePositions = [];
+
+        for (let r = 0; r <= maxRow; r++) {
+            for (let c = 0; c <= maxCol; c++) {
+                // Check if can place car at (r, c)
+                let canPlace = true;
+                for (let offset = 0; offset < car.length; offset++) {
+                    const rr = car.orientation === 'H' ? r : r + offset;
+                    const cc = car.orientation === 'H' ? c + offset : c;
+                    if (occupiedGrid[rr][cc]) {
+                        canPlace = false;
+                        break;
+                    }
+                }
+                if (canPlace) {
+                possiblePositions.push({ row: r, col: c });
+                }
+            }
+        }
+
+        if (possiblePositions.length === 1) {
+            // Unique placement found, place the car
+            const pos = possiblePositions[0];
+            car.row = pos.row;
+            car.col = pos.col;
+
+            // Mark cells occupied
+            for (let offset = 0; offset < car.length; offset++) {
+                const rr = car.orientation === 'H' ? pos.row : pos.row + offset;
+                const cc = car.orientation === 'H' ? pos.col + offset : pos.col;
+                occupiedGrid[rr][cc] = true;
+            }
+
+            // Remove placed car from carsToPlace and restart recursion
+            const remainingCars = carsToPlace.slice(0, i).concat(carsToPlace.slice(i + 1));
+            const placedInRest = placeCarsRecursively(board, remainingCars, occupiedGrid);
+            return true; // We placed at least one car, so continue until stable
+        }
+        // If no unique placement, leave car unplaced (wildcard)
     }
 
+    // If no cars placed in this pass, stop recursion
+    return false;
+}
+
+export function makeCompleteGoalBoard(startBoard) {
+    const goalBoard = startBoard.clone();
+    const targetCar = goalBoard.cars.find(c => c.isTarget);
+    if (!targetCar) throw new Error('No target car found');
+    const exit = goalBoard.exit;
+
+    // Place target car at exit position -1 (handling edge cases)
+    if (targetCar.orientation === 'H') {
+        targetCar.row = exit.row;
+        targetCar.col = exit.col === 0 ? 0 : exit.col - (targetCar.length - 1);
+    } else {
+        targetCar.col = exit.col;
+        targetCar.row = exit.row === 0 ? 0 : exit.row - (targetCar.length - 1);
+    }
+
+    // Prepare occupancy grid
+    const occupiedGrid = Array.from({ length: goalBoard.size }, () =>
+        Array(goalBoard.size).fill(false)
+    );
+
+    // Mark target car occupied
+    for (let offset = 0; offset < targetCar.length; offset++) {
+        const rr = targetCar.orientation === 'H' ? targetCar.row : targetCar.row + offset;
+        const cc = targetCar.orientation === 'H' ? targetCar.col + offset : targetCar.col;
+        occupiedGrid[rr][cc] = true;
+    }
+
+    if (!placeCarsRecursively(goalBoard, goalBoard.cars, occupiedGrid)) {
+        throw new Error('Could not place all cars logically');
+    }
+
+    goalBoard._placeCars();
+    return goalBoard;
 }

@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { Board, Car } from './board.js';
-import { uniformedCostSearch, greedyBestFirstSearch, aStarSearch } from './search.js';
+import { Board, Car, makeCompleteGoalBoard } from './board.js';
+import { uniformedCostSearch, greedyBestFirstSearch, aStarSearch} from './search.js';
 
 const inputFile = process.argv[2];
 if (!inputFile) {
@@ -16,38 +16,70 @@ function parseInput(input) {
     const N = Number(lines[1]);
 
     const boardLines = lines.slice(2);
-    
-    let maxRow = A;
-    let maxCol = B;
+    let maxRow = boardLines.length;
+    let maxCol = boardLines.length === A ? B + 1 : B;
 
     let exitPos = null;
+    let exitOrientation = null;
 
     for (let r = 0; r < boardLines.length; r++) {
         const rowStr = boardLines[r];
         for (let c = 0; c < rowStr.length; c++) {
-        if (rowStr[c] === 'K') {
-            exitPos = { row: r, col: c };
-            if (r >= maxRow) maxRow = r + 1;
-            if (c >= maxCol) maxCol = c + 1;
-        }
+            if (rowStr[c] === 'K') {
+                let exitRow = r;
+                let exitCol = c;
+
+                if (r === 0) exitOrientation = 'V'; // top edge, vertical exit
+                else if (r === A) exitOrientation = 'V'; // bottom edge, vertical exit
+                else if (c === 0) exitOrientation = 'H'; // left edge, horizontal exit
+                else if (c === B) exitOrientation = 'H'; // right edge, horizontal exit
+
+                if (exitOrientation === 'V') {
+                    if (r === 0) exitRow = -1;
+                    else if (r === A) exitRow = A;
+                } else if (exitOrientation === 'H') {
+                    if (c === 0) exitCol = -1;
+                    else if (c === B) exitCol = B;
+                }
+                exitPos = { row: exitRow, col: exitCol };
+                console.log(`Exit found at (${exitRow}, ${exitCol})`);
+            }
         }
     }
-
+    console.log(maxRow, maxCol);
     const grid = [];
     for (let r = 0; r < maxRow; r++) {
-        const rowStr = boardLines[r] || '';
-        const rowArr = [];
-        for (let c = 0; c < maxCol; c++) {
-        rowArr.push(rowStr[c] || '.');
+        if (exitOrientation === 'V' && (r === 0 || r === A)) {
+            if ((exitPos.row === -1 && r === 0) || (exitPos.row === A && r === A)) {
+                continue;
+            }
+        }
+        const rawLine = boardLines[r] || '';
+        let rowArr = [];
+
+        let kIndex = rawLine.indexOf('K');
+        if (kIndex !== -1) {
+            if (exitOrientation === 'H') {
+                let lineWithoutK = rawLine.slice(0, kIndex) + rawLine.slice(kIndex + 1);
+                rowArr = lineWithoutK.trimStart().split('');
+            } else {
+                rowArr = rawLine.trimStart().split('');
+            }
+        } else {
+            rowArr = rawLine.trimStart().split('');
+        }
+
+        while (rowArr.length < maxCol) {
+            rowArr.push(' ');
         }
         grid.push(rowArr);
     }
 
     const carsInfo = {};
-    for (let r = 0; r < maxRow; r++) {
-        for (let c = 0; c < maxCol; c++) {
+    for (let r = 0; r < grid.length; r++) {
+        for (let c = 0; c < grid[0].length; c++) {
             const ch = grid[r][c];
-            if (ch === '.' || ch === 'K') continue;
+            if (ch === ' ' || ch === 'K' || ch === '.') continue;
             if (!carsInfo[ch]) carsInfo[ch] = [];
             carsInfo[ch].push([r, c]);
         }
@@ -64,14 +96,17 @@ function parseInput(input) {
         cars.push(new Car(id, startRow, startCol, length, orientation, isTarget));
     }
 
-    return new Board(maxRow, cars, exitPos);
+    return new Board(grid.length, cars, exitPos);
 }
 
 const board = parseInput(fileContent);
 console.log('Papan Awal:');
-console.log(board.printBoard());
+board.printBoard();
+/*const goalBoard = makeCompleteGoalBoard(board);
+console.log('Papan Tujuan:');
+console.log(goalBoard.printBoard());
 
-const solutionNode = uniformedCostSearch(board, board);
+const solutionNode = uniformedCostSearch(board, goalBoard);
 
 if (solutionNode) {
     const path = [];
@@ -100,4 +135,4 @@ if (solutionNode) {
     });
 } else {
     console.log('No solution found');
-}
+}*/
