@@ -1,4 +1,3 @@
-// search.js
 import { PriorityQueue } from './priorityqueue.js';
 import { Node } from './node.js';
 
@@ -63,50 +62,48 @@ export function uniformCostSearch(startBoard) {
  * Explores nodes by lowest heuristic estimate (h).
  */
 export function greedyBestFirstSearch(startBoard) {
-  const start = new Node(startBoard);
-  const pq = new PriorityQueue((a, b) => a.h - b.h);
-  pq.enqueue(start);
+    const start = new Node(startBoard);
+    const pq = new PriorityQueue((a, b) => a.h - b.h);
+    pq.enqueue(start);
 
-  const explored = new Set();
-  let expansions = 0;
-  const MAX_EXPANSIONS = 100000;
+    const explored = new Set();
+    let expansions = 0;
+    const MAX_EXPANSIONS = 100000;
 
-  while (!pq.isEmpty()) {
-    const current = pq.dequeue();
-    expansions++;
+    console.log('Starting GBFS search');
 
-    if (expansions > MAX_EXPANSIONS) {
-      console.warn('GBFS aborted: max expansions reached');
-      return null;
+    while (!pq.isEmpty()) {
+        const current = pq.dequeue();
+        expansions++;
+
+        if (expansions > MAX_EXPANSIONS) {
+        return null;
+        }
+
+        if (current.isGoal()) {
+            console.log(`GBFS goal found after ${expansions} expansions with heuristic: ${current.h.toFixed(2)}`);
+            return current;
+        }
+
+        const serialized = current.serialize();
+        if (explored.has(serialized)) {
+            continue;
+        }
+        explored.add(serialized);
+
+        const neighbors = current.getNeighbors();
+
+        for (const nbr of neighbors) {
+            const key = nbr.serialize();
+            if (!explored.has(key)) {
+                pq.enqueue(nbr);
+            }
+        }
     }
-
-    debugLog(`GBFS Dequeued node h=${current.h} move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
-
-    if (current.isGoal()) {
-      console.log(`GBFS goal found after ${expansions} expansions with heuristic: ${current.h}`);
-      return current;
-    }
-
-    explored.add(current.serialize());
-
-    const neighbors = current.getNeighbors();
-    debugLog(`GBFS expanding ${neighbors.length} neighbors`);
-
-    for (const nbr of neighbors) {
-      const key = nbr.serialize();
-      if (!explored.has(key)) {
-        explored.add(key); 
-        pq.enqueue(nbr);
-        debugLog(`GBFS Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} h=${nbr.h}`);
-      } else {
-        debugLog(`GBFS Skipping explored neighbor: ${key}`);
-      }
-    }
-  }
-
-  console.log('GBFS no solution found');
-  return null;
+    console.log('GBFS no solution found');
+    return null;
 }
+
 
 /**
  * A* Search

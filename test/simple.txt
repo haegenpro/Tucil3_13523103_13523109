@@ -2,6 +2,6 @@
 4
 AAC.
 ..C.
-..PPK
+.PP.K
 D..B
 D..B

@@ -31,11 +31,11 @@ export class Board {
     _placeCars() {
         this.grid = this._createGrid();
         this.cars.forEach(({ id, row, col, length, orientation }) => {
-        for (let offset = 0; offset < length; offset++) {
-            const r = orientation === 'V' ? row + offset : row;
-            const c = orientation === 'H' ? col + offset : col;
-            this.grid[r][c] = id;
-        }
+            for (let offset = 0; offset < length; offset++) {
+                const r = orientation === 'V' ? row + offset : row;
+                const c = orientation === 'H' ? col + offset : col;
+                this.grid[r][c] = id;
+            }
         });
     }
 
@@ -46,20 +46,64 @@ export class Board {
 
     moveCar(id, delta) {
         const car = this.cars.find(c => c.id === id);
-        if (!car) throw new Error(`No car with id ${id}`);
-        if (car.orientation === 'H') car.col += delta;
-        else car.row += delta;
+        if (!car) {
+            return;
+        }
+        if (!this.canMove(car, delta)) {
+            return;
+        }
+        let newRow = car.row;
+        let newCol = car.col;
+
+        if (car.orientation === 'H') {
+            newCol += delta;
+        } else {
+            newRow += delta;
+        }
+        car.row = newRow;
+        car.col = newCol;
+
         this._placeCars();
     }
 
+    canMove(car, delta) {
+        const newRow = car.orientation === 'V' ? car.row + delta : car.row;
+        const newCol = car.orientation === 'H' ? car.col + delta : car.col;
+        if (
+            newRow < 0 ||
+            newCol < 0 ||
+            (car.orientation === 'H' && newCol + car.length > this.width) ||
+            (car.orientation === 'V' && newRow + car.length > this.height)
+        ) {
+            return false;
+        }
+
+        for (let offset = 0; offset < car.length; offset++) {
+            const checkRow = car.orientation === 'V' ? newRow + offset : newRow;
+            const checkCol = car.orientation === 'H' ? newCol + offset : newCol;
+            const occupant = this.grid[checkRow][checkCol];
+            if (occupant && occupant !== car.id) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     isGoal() {
         const target = this.cars.find(c => c.isTarget);
-        if (!target || target.orientation !== 'H') return false;
-        const frontCol = target.col + target.length - 1;
-        return (
-        target.row === this.exit.row &&
-        frontCol === this.exit.col
-        );
+        console.log(target);
+        if (!target) return false;
+        console.log(target.row, target.col, target.length);
+        console.log(this.exit.row, this.exit.col);
+
+        if (this.exitOrientation === 'H') {
+            console.log(this.exit.col, target.col, target.length);
+            return this.exit.col === -1 ? target.col === 0 && target.row === this.exit.row : target.col + target.length === this.exit.col && target.row === this.exit.row;
+        } else {
+            console.log(this.exit.row, target.row, target.length);
+            return this.exit.row === -1 ? target.row === 0 && target.col === this.exit.col : target.row + target.length === this.exit.row && target.col === this.exit.col;
+        }
     }
 
     heuristic() {
@@ -110,7 +154,7 @@ export class Board {
         ({ id, row, col, length, orientation, isTarget }) =>
             new Car(id, row, col, length, orientation, isTarget)
         );
-        return new Board(this.height, this.width, carsCopy, this.exit, this.orientation);
+        return new Board(this.height, this.width, carsCopy, this.exit, this.exitOrientation);
     }
 
     reset() {
@@ -134,16 +178,13 @@ export class Board {
 
     isGoal() {
         const target = this.cars.find(c => c.isTarget);
-        if (!target) return false;
         let frontIdx, exitIdx;
         if (this.exitOrientation === 'H') {
-            if (target.orientation !== 'H') return false;
             frontIdx = exitIdx < 0
                 ? target.col
                 : target.col + target.length - 1;
             exitIdx = exitIdx < 0 ? 0 : this.exit.col - 1;
         } else {
-            if (target.orientation !== 'V') return false;
             frontIdx = exitIdx < 0
                 ? target.row
                 : target.row + target.length - 1;
@@ -152,60 +193,21 @@ export class Board {
         return frontIdx === exitIdx && (this.exitOrientation === 'H' ? target.row === this.exit.row : target.col === this.exit.col);
     }
 
-    getSuccessors() {
-        const successors = [];
-        this.cars.forEach(car => {
-        let step = -1;
-        while (true) {
-            const next = this.clone();
-            try {
-                next.moveCar(car.id, step);
-                successors.push(next);
-                step--;
-            } catch {
-            break;
-            }
-        }
-        step = 1;
-        while (true) {
-            const next = this.clone();
-            try {
-                next.moveCar(car.id, step);
-                successors.push(next);
-                step++;
-            } catch {
-            break;
-            }
-        }
-        });
-        return successors;
-    }
-
     getSuccessorMoves() {
         const result = [];
         this.cars.forEach(car => {
-        let step = -1;
-        while (true) {
-            const next = this.clone();
-            try {
+            for (let step = -1; ; step--) {
+                if (!this.canMove(car, step)) break;
+                const next = this.clone();
                 next.moveCar(car.id, step);
                 result.push({ board: next, move: { id: car.id, delta: step } });
-                step--;
-            } catch {
-            break;
             }
-        }
-        step = 1;
-        while (true) {
-            const next = this.clone();
-            try {
+            for (let step = 1; ; step++) {
+                if (!this.canMove(car, step)) break;
+                const next = this.clone();
                 next.moveCar(car.id, step);
                 result.push({ board: next, move: { id: car.id, delta: step } });
-                step++;
-            } catch {
-            break;
             }
-        }
         });
         return result;
     }
@@ -319,7 +321,6 @@ function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
             const remainingCars = carsToPlace.slice(0, i).concat(carsToPlace.slice(i + 1));
             return placeCarsRecursively(board, remainingCars, occupiedGrid);
         }
-        // If no unique placement, leave car unplaced (wildcard)
     }
     return [board, carsToPlace];
 }
