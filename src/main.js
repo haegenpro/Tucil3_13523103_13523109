@@ -42,11 +42,9 @@ function parseInput(input) {
                     else if (c === B) exitCol = B;
                 }
                 exitPos = { row: exitRow, col: exitCol };
-                console.log(`Exit found at (${exitRow}, ${exitCol})`);
             }
         }
     }
-    console.log(maxRow, maxCol);
     const grid = [];
     for (let r = 0; r < maxRow; r++) {
         if (exitOrientation === 'V' && (r === 0 || r === A)) {

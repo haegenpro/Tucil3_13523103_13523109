@@ -185,9 +185,8 @@ export class Board {
             }
         });
 
-        // Print extra line for top or bottom vertical exit
         if (this.exit) {
-            if (this.exit.row === -1) { // top edge
+            if (this.exit.row === -1) {
                 let line = '';
                 for (let c = 0; c < this.size; c++) {
                     line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
@@ -195,13 +194,11 @@ export class Board {
                 console.log(line);
             }
         }
-
-        // Print each grid row with possible left/right horizontal exit
         for (let r = 0; r < this.size; r++) {
             let line = '';
             if (this.exit) {
                 if (this.exit.col === -1) {
-                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' '; // left exit
+                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' ';
                 }
             }
             for (let c = 0; c < this.size; c++) {
@@ -209,14 +206,14 @@ export class Board {
             }
             if (this.exit) {
                 if (this.exit.col === this.size) {
-                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' '; // right exit
+                    r === this.exit.row ? line += CYAN + 'K' + RESET: line += ' ';
                 }
             }
             console.log(line);
         }
 
         if (this.exit) {
-            if (this.exit.row === this.size) { // bottom edge
+            if (this.exit.row === this.size) {
                 let line = '';
                 for (let c = 0; c < this.size; c++) {
                     line += c === this.exit.col ? CYAN + 'K' + RESET : ' ';
@@ -252,7 +249,7 @@ function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
                     }
                 }
                 if (canPlace) {
-                possiblePositions.push({ row: r, col: c });
+                    possiblePositions.push({ row: r, col: c });
                 }
             }
         }
