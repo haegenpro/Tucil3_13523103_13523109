@@ -250,19 +250,54 @@ function parseInput(input) {
 }
 
 // Start time
+console.log("Input file location:");
+// User inputs the file location
+
+console.log("Choose an algorithm:");
+let algorithm = 3;
+console.log("Choose a heuristic:");
+let heuristic = 2;
 const startTime = Date.now();
 
 const board = parseInput(fileContent);
 console.log('Papan Awal:');
 board.printBoard();
 
-const solutionNode = aStarSearch(board);
-// const solutionNode = greedyBestFirstSearch(board);
-// const solutionNode = uniformCostSearch(board);
-// const solutionNode = beamSearch(board, 75);
+let solutionNode = null;
+let expansions = 0;
+
+switch (algorithm) {
+    case 2: {
+        const result = greedyBestFirstSearch(board, heuristic);
+        solutionNode = result.node;
+        expansions   = result.expansions;
+        break;
+    }
+    case 3: {
+        const result = aStarSearch(board, heuristic);
+        solutionNode = result.node;
+        expansions   = result.expansions;
+        break;
+    }
+    case 4: {
+        const result = beamSearch(board, 75, heuristic);
+        solutionNode = result.node;
+        expansions   = result.expansions;
+        break;
+    }
+    case 1:
+    default: {
+        const result = uniformCostSearch(board, heuristic);
+        solutionNode = result.node;
+        expansions   = result.expansions;
+        break;
+    }
+}
 
 const endTime = Date.now();
 const elapsedTime = endTime - startTime;
+console.log(`\nTotal time: ${elapsedTime} ms`);
+console.log(`Total nodes iterated: ${expansions}`);
 
 if (solutionNode) {
     const path = [];
@@ -289,7 +324,7 @@ if (solutionNode) {
         console.log(`\nGerakan ${i}: ${move.id}-${direction}`);
         node.board.printBoard(move);
     });
-    console.log(`\nTotal time: ${elapsedTime} ms`);
+    
 } else {
     console.log('No solution found');
 }

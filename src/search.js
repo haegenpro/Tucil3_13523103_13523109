@@ -1,14 +1,8 @@
 import { PriorityQueue } from './priorityqueue.js';
 import { Node } from './node.js';
 
-function debugLog(...args) {
-  if (process.env.DEBUG) {
-    console.debug('[DEBUG]', ...args);
-  }
-}
-
-export function uniformCostSearch(startBoard) {
-    const start = new Node(startBoard);
+export function uniformCostSearch(startBoard, heuristic = 1) {
+    const start = new Node(startBoard, null, null, heuristic);
     const pq = new PriorityQueue((a, b) => a.g - b.g);
     pq.enqueue(start);
 
@@ -22,33 +16,29 @@ export function uniformCostSearch(startBoard) {
 
         if (expansions > MAX_EXPANSIONS) {
             console.warn('UCS aborted: max expansions reached');
-            return null;
+            return { node: null, expansions };
         }
-
         if (current.isGoal()) {
-            console.log(`UCS goal found after ${expansions} expansions with cost: ${current.g}`);
-            return current;
+            console.log(`UCS goal found after ${expansions} expansions (cost: ${current.g})`);
+            return { node: current, expansions };
         }
 
         explored.add(current.serialize());
-
-        const neighbors = current.getNeighbors();
-
-        for (const nbr of neighbors) {
+        for (const nbr of current.getNeighbors()) {
             const key = nbr.serialize();
             if (!explored.has(key)) {
-                explored.add(key); 
+                explored.add(key);
                 pq.enqueue(nbr);
             }
         }
     }
 
     console.log('UCS no solution found');
-    return null;
+    return { node: null, expansions };
 }
 
-export function greedyBestFirstSearch(startBoard) {
-    const start = new Node(startBoard);
+export function greedyBestFirstSearch(startBoard, heuristic = 1) {
+    const start = new Node(startBoard, null, null, heuristic);
     const pq = new PriorityQueue((a, b) => a.h - b.h);
     pq.enqueue(start);
 
@@ -62,35 +52,29 @@ export function greedyBestFirstSearch(startBoard) {
 
         if (expansions > MAX_EXPANSIONS) {
             console.warn('GBFS aborted: max expansions reached');
-            return null;
+            return { node: null, expansions };
         }
-
         if (current.isGoal()) {
-            console.log(`GBFS goal found after ${expansions} expansions with heuristic: ${current.h.toFixed(2)}`);
-            return current;
+            console.log(`GBFS goal found after ${expansions} expansions (h=${current.h.toFixed(2)})`);
+            return { node: current, expansions };
         }
 
         const serialized = current.serialize();
-        if (explored.has(serialized)) {
-            continue;
-        }
+        if (explored.has(serialized)) continue;
         explored.add(serialized);
 
-        const neighbors = current.getNeighbors();
-
-        for (const nbr of neighbors) {
+        for (const nbr of current.getNeighbors()) {
             const key = nbr.serialize();
-            if (!explored.has(key)) {
-                pq.enqueue(nbr);
-            }
+            if (!explored.has(key)) pq.enqueue(nbr);
         }
     }
+
     console.log('GBFS no solution found');
-    return null;
+    return { node: null, expansions };
 }
 
-export function aStarSearch(startBoard) {
-    const start = new Node(startBoard);
+export function aStarSearch(startBoard, heuristic = 1) {
+    const start = new Node(startBoard, null, null, heuristic);
     const pq = new PriorityQueue((a, b) => a.f - b.f);
     pq.enqueue(start);
 
@@ -104,32 +88,29 @@ export function aStarSearch(startBoard) {
 
         if (expansions > MAX_EXPANSIONS) {
             console.warn('A* aborted: max expansions reached');
-            return null;
+            return { node: null, expansions };
         }
-
         if (current.isGoal()) {
-        console.log(`A* goal found after ${expansions} expansions with cost: ${current.g}`);
-            return current;
+            console.log(`A* goal found after ${expansions} expansions (cost: ${current.g})`);
+            return { node: current, expansions };
         }
 
         explored.add(current.serialize());
-
-        const neighbors = current.getNeighbors();
-
-        for (const nbr of neighbors) {
+        for (const nbr of current.getNeighbors()) {
             const key = nbr.serialize();
             if (!explored.has(key)) {
-                explored.add(key); 
+                explored.add(key);
                 pq.enqueue(nbr);
             }
         }
     }
+
     console.log('A* no solution found');
-    return null;
+    return { node: null, expansions };
 }
 
-export function beamSearch(startBoard, beamWidth = 50) {
-    const start = new Node(startBoard);
+export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
+    const start = new Node(startBoard, null, null, heuristic);
     let beam = [start];
     const explored = new Set();
     let expansions = 0;
@@ -142,21 +123,17 @@ export function beamSearch(startBoard, beamWidth = 50) {
             expansions++;
             if (expansions > MAX_EXPANSIONS) {
                 console.warn('BeamSearch aborted: max expansions reached');
-                return null;
+                return { node: null, expansions };
             }
-
             if (node.isGoal()) {
                 console.log(`BeamSearch goal found after ${expansions} expansions (cost: ${node.g})`);
-                return node;
+                return { node, expansions };
             }
 
             explored.add(node.serialize());
-
             for (const nbr of node.getNeighbors()) {
                 const key = nbr.serialize();
-                if (!explored.has(key)) {
-                    successors.push(nbr);
-                }
+                if (!explored.has(key)) successors.push(nbr);
             }
         }
 
@@ -166,5 +143,5 @@ export function beamSearch(startBoard, beamWidth = 50) {
     }
 
     console.log('BeamSearch no solution found');
-    return null;
+    return { node: null, expansions };
 }

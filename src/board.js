@@ -106,9 +106,8 @@ export class Board {
         }
     }
 
-    heuristic() {
+    countDirectBlockers() {
         const target = this.cars.find(c => c.isTarget);
-        if (!target) throw new Error("No primary car for heuristic");
 
         let frontIdx, exitIdx, distance, blockers = 0;
 
@@ -127,7 +126,8 @@ export class Board {
             for (let c = minC + 1; c < maxC; c++) {
                 if (this.grid[row][c]) blockers++;
             }
-        } else {
+        } 
+        else {
             exitIdx  = this.exit.row;
             frontIdx = exitIdx < 0
                 ? target.row
@@ -145,8 +145,122 @@ export class Board {
         return distance + (blockers * 3);
     }
 
-    getHeuristic() {
-        return this.heuristic();
+    countRecursiveBlockers() {
+        const base = this.countDirectBlockers();  
+
+        const target = this.cars.find(c => c.isTarget);
+        const burdenCache = new Map();
+        const burden = this.carBlockers(target.id, burdenCache);
+
+        return base + burden;
+    }
+
+    countMinSteps() {
+        const target = this.cars.find(c => c.isTarget);
+
+        let frontIdx, exitIdx, distance = 0;
+        let blockers = [];
+
+        if (this.exitOrientation === 'H') {
+            exitIdx  = this.exit.col;
+            frontIdx = exitIdx < 0
+                ? target.col
+                : target.col + target.length - 1;
+
+            distance = Math.abs(exitIdx - frontIdx);
+
+            const row = target.row;
+            const minC = Math.min(frontIdx, exitIdx);
+            const maxC = Math.max(frontIdx, exitIdx);
+
+            for (let c = minC + 1; c < maxC; c++) {
+                if (this.grid[row][c]) {
+                    const car = this.cars.find(c => c.id === this.grid[row][c]);
+                    if (car) {
+                        blockers.push(car.id);
+                    }
+                }
+            }
+        } 
+        else {
+            exitIdx  = this.exit.row;
+            frontIdx = exitIdx < 0
+                ? target.row
+                : target.row + target.length - 1;
+
+            distance = Math.abs(exitIdx - frontIdx);
+
+            const col = target.col;
+            const minR = Math.min(frontIdx, exitIdx);
+            const maxR = Math.max(frontIdx, exitIdx);
+            for (let r = minR + 1; r < maxR; r++) {
+                if (this.grid[r][col]){
+                    const car = this.cars.find(c => c.id === this.grid[r][col]);
+                    if (car) {
+                        blockers.push(car.id);
+                    }
+                }
+            }
+        }
+        let movesNeeded = 0;
+        for (const id of blockers) {
+            const car = this.cars.find(c => c.id === id);
+            movesNeeded += this.minStepsToFree(car);
+        }
+        return dist + movesNeeded;
+    }
+
+    getHeuristic(h) {
+        switch (h) {
+            case 2:
+                return this.countRecursiveBlockers();
+            case 3:
+                return this.countMinSteps();
+            default:
+                return this.countDirectBlockers();
+        }
+    }
+
+    carBlockers(carId, burdenCache = new Map(), visiting = new Set()) {
+        if (burdenCache.has(carId)) {
+            return burdenCache.get(carId);
+        }
+
+        if (visiting.has(carId)) {
+            return 0;
+        }
+        visiting.add(carId);
+
+        const car = this.cars.find(c => c.id === carId);
+        if (!car) {
+            visiting.delete(carId);
+            burdenCache.set(carId, 0);
+            return 0;
+        }
+
+        const blockers = new Set();
+        if (car.orientation === 'H') {
+            const r = car.row;
+            for (let c = 0; c < this.width; c++) {
+                const occ = this.grid[r][c];
+                if (occ && occ !== carId) blockers.add(occ);
+            }
+        } else {
+            const c = car.col;
+            for (let r = 0; r < this.height; r++) {
+                const occ = this.grid[r][c];
+                if (occ && occ !== carId) blockers.add(occ);
+            }
+        }
+
+        let weight = blockers.size;
+
+        for (const bId of blockers) {
+            weight += 0.5 * this.carBlockers(bId, burdenCache, visiting);
+        }
+        visiting.delete(carId);
+        burdenCache.set(carId, weight);
+        return weight;
     }
 
     clone() {
