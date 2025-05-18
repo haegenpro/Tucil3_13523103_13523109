@@ -315,8 +315,8 @@ if (solutionNode) {
         } else {
             direction = move.delta > 0 ? 'down' : 'up';
         }
-        console.log(`\nMove ${i}: ${move.id}-${direction}`);
-        node.board.printBoard(move);
+        // console.log(`\nMove ${i}: ${move.id}-${direction}`);
+        // node.board.printBoard(move);
     });
     
 } else {

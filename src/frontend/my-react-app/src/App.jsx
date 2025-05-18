@@ -43,7 +43,8 @@ function App() {
       const json = await res.json()
       if (json.success) {
         alert('Berhasil menyimpan testWeb.txt!')
-        setSolverOutput(json.result)
+        const data = JSON.parse(json.result)
+        setSolverOutput(data)
       } else {
         alert('Gagal simpan: Konfigurasi Papan Anda Bermasalah!'  + json.error)
       }
@@ -170,8 +171,37 @@ function App() {
       </aside>
 
       {/* Main content 60% */}
-      <main className="w-3/5 px-20px overflow-auto">
-        {solverOutput}
+      <main className="w-3/5 p-10 overflow-auto font-mono bg-white">
+        {solverOutput && (
+          <div>
+            <p>⏱ Waktu Eksekusi: {solverOutput.elapsedTime} ms</p>
+            <p>🔍 Jumlah Ekspansi: {solverOutput.expansions}</p>
+
+            {solverOutput.solution.map(({ step, move, board }) => (
+              <div key={step} className="mb-4">
+                <h4 className="font-semibold">
+                    Step {step}
+                    {move
+                      ? `: ${move.id}-${
+                          move.delta > 0
+                            ? (board[0].length > move.delta ? 'right' : 'down')
+                            : (move.delta < 0 ? 'left' : 'up')
+                        }`
+                      : ' (initial)'}
+                </h4>
+                <pre className="bg-gray-100 p-2 rounded">
+                  {board
+                    .map(row =>
+                      row
+                        .map(cell => (cell === null ? '.' : cell))
+                        .join(' ')
+                    )
+                    .join('\n')}
+                </pre>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   )
