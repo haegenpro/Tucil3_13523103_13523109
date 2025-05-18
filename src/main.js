@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { Board, Car, makeCompleteGoalBoard } from './board.js';
-import { uniformCostSearch, greedyBestFirstSearch, aStarSearch} from './search.js';
+import { Board, Car } from './board.js';
+import { uniformCostSearch, greedyBestFirstSearch, aStarSearch, beamSearch} from './search.js';
 import { error } from 'console';
 
 const inputFile = process.argv[2];
@@ -256,7 +256,10 @@ const board = parseInput(fileContent);
 console.log('Papan Awal:');
 board.printBoard();
 
-const solutionNode = uniformCostSearch(board);
+const solutionNode = aStarSearch(board);
+// const solutionNode = greedyBestFirstSearch(board);
+// const solutionNode = uniformCostSearch(board);
+// const solutionNode = beamSearch(board, 75);
 
 const endTime = Date.now();
 const elapsedTime = endTime - startTime;

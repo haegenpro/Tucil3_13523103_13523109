@@ -21,31 +21,25 @@ export function uniformCostSearch(startBoard) {
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-        console.warn('UCS aborted: max expansions reached');
-        return null;
+            console.warn('UCS aborted: max expansions reached');
+            return null;
         }
 
-        debugLog(`UCS Dequeued node g=${current.g} move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
-
         if (current.isGoal()) {
-        console.log(`UCS goal found after ${expansions} expansions with cost: ${current.g}`);
-        return current;
+            console.log(`UCS goal found after ${expansions} expansions with cost: ${current.g}`);
+            return current;
         }
 
         explored.add(current.serialize());
 
         const neighbors = current.getNeighbors();
-        debugLog(`UCS expanding ${neighbors.length} neighbors`);
 
         for (const nbr of neighbors) {
-        const key = nbr.serialize();
-        if (!explored.has(key)) {
-            explored.add(key); 
-            pq.enqueue(nbr);
-            debugLog(`UCS Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} g=${nbr.g}`);
-        } else {
-            debugLog(`UCS Skipping explored neighbor: ${key}`);
-        }
+            const key = nbr.serialize();
+            if (!explored.has(key)) {
+                explored.add(key); 
+                pq.enqueue(nbr);
+            }
         }
     }
 
@@ -62,14 +56,13 @@ export function greedyBestFirstSearch(startBoard) {
     let expansions = 0;
     const MAX_EXPANSIONS = 100000;
 
-    console.log('Starting GBFS search');
-
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-        return null;
+            console.warn('GBFS aborted: max expansions reached');
+            return null;
         }
 
         if (current.isGoal()) {
@@ -110,34 +103,68 @@ export function aStarSearch(startBoard) {
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-        console.warn('A* aborted: max expansions reached');
-        return null;
+            console.warn('A* aborted: max expansions reached');
+            return null;
         }
-
-        debugLog(`A* Dequeued node f=${current.f} (g=${current.g}, h=${current.h}) move=${current.move ? current.move.id + ':' + current.move.delta : 'start'}`);
 
         if (current.isGoal()) {
         console.log(`A* goal found after ${expansions} expansions with cost: ${current.g}`);
-        return current;
+            return current;
         }
 
         explored.add(current.serialize());
 
         const neighbors = current.getNeighbors();
-        debugLog(`A* expanding ${neighbors.length} neighbors`);
 
         for (const nbr of neighbors) {
-        const key = nbr.serialize();
-        if (!explored.has(key)) {
-            explored.add(key); 
-            pq.enqueue(nbr);
-            debugLog(`A* Enqueued neighbor move=${nbr.move.id}:${nbr.move.delta} f=${nbr.f} (g=${nbr.g}, h=${nbr.h})`);
-        } else {
-            debugLog(`A* Skipping explored neighbor: ${key}`);
-        }
+            const key = nbr.serialize();
+            if (!explored.has(key)) {
+                explored.add(key); 
+                pq.enqueue(nbr);
+            }
         }
     }
-
     console.log('A* no solution found');
+    return null;
+}
+
+export function beamSearch(startBoard, beamWidth = 50) {
+    const start = new Node(startBoard);
+    let beam = [start];
+    const explored = new Set();
+    let expansions = 0;
+    const MAX_EXPANSIONS = 100000;
+
+    while (beam.length > 0) {
+        const successors = [];
+
+        for (const node of beam) {
+            expansions++;
+            if (expansions > MAX_EXPANSIONS) {
+                console.warn('BeamSearch aborted: max expansions reached');
+                return null;
+            }
+
+            if (node.isGoal()) {
+                console.log(`BeamSearch goal found after ${expansions} expansions (cost: ${node.g})`);
+                return node;
+            }
+
+            explored.add(node.serialize());
+
+            for (const nbr of node.getNeighbors()) {
+                const key = nbr.serialize();
+                if (!explored.has(key)) {
+                    successors.push(nbr);
+                }
+            }
+        }
+
+        if (successors.length === 0) break;
+        successors.sort((a, b) => a.f - b.f);
+        beam = successors.slice(0, beamWidth);
+    }
+
+    console.log('BeamSearch no solution found');
     return null;
 }

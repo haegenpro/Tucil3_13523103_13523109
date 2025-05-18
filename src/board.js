@@ -276,7 +276,7 @@ export class Board {
     }
 }
 
-function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
+/*function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
     let placedAny = false;
 
     for (let i = 0; i < carsToPlace.length; i++) {
@@ -306,12 +306,10 @@ function placeCarsRecursively(board, carsToPlace, occupiedGrid) {
         }
 
         if (possiblePositions.length === 1) {
-            // Unique placement found, place the car
             const pos = possiblePositions[0];
             car.row = pos.row;
             car.col = pos.col;
 
-            // Mark cells occupied
             for (let offset = 0; offset < car.length; offset++) {
                 const rr = car.orientation === 'H' ? pos.row : pos.row + offset;
                 const cc = car.orientation === 'H' ? pos.col + offset : pos.col;
@@ -358,3 +356,4 @@ export function makeCompleteGoalBoard(startBoard) {
     goalBoard._placeCars();
     return goalBoard;
 }
+*/
