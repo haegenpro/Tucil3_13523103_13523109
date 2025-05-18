@@ -171,7 +171,7 @@ function App() {
       </aside>
 
       {/* Main content 60% */}
-      <main className="w-3/5 p-10 overflow-auto font-mono bg-white">
+      <main className="w-3/5 p-10 overflow-auto font-mono bg-white flex justify-center">
         {solverOutput && (
           <div>
             <p>⏱ Waktu Eksekusi: {solverOutput.elapsedTime} ms</p>
