@@ -15,7 +15,7 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-            console.warn('UCS aborted: max expansions reached');
+            
             return { node: null, expansions };
         }
         if (current.isGoal()) {
@@ -33,7 +33,7 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
         }
     }
 
-    console.log('UCS no solution found');
+    
     return { node: null, expansions };
 }
 
@@ -51,7 +51,7 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-            console.warn('GBFS aborted: max expansions reached');
+            
             return { node: null, expansions };
         }
         if (current.isGoal()) {
@@ -69,7 +69,7 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
         }
     }
 
-    console.log('GBFS no solution found');
+    
     return { node: null, expansions };
 }
 
@@ -87,7 +87,7 @@ export function aStarSearch(startBoard, heuristic = 1) {
         expansions++;
 
         if (expansions > MAX_EXPANSIONS) {
-            console.warn('A* aborted: max expansions reached');
+            
             return { node: null, expansions };
         }
         if (current.isGoal()) {
@@ -105,7 +105,7 @@ export function aStarSearch(startBoard, heuristic = 1) {
         }
     }
 
-    console.log('A* no solution found');
+    
     return { node: null, expansions };
 }
 
@@ -122,7 +122,7 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
         for (const node of beam) {
             expansions++;
             if (expansions > MAX_EXPANSIONS) {
-                console.warn('BeamSearch aborted: max expansions reached');
+                
                 return { node: null, expansions };
             }
             if (node.isGoal()) {
@@ -142,6 +142,6 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
         beam = successors.slice(0, beamWidth);
     }
 
-    console.log('BeamSearch no solution found');
+    
     return { node: null, expansions };
 }

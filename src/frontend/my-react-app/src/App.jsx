@@ -45,7 +45,7 @@ function App() {
         alert('Berhasil menyimpan testWeb.txt!')
         setSolverOutput(json.result)
       } else {
-        alert('Gagal simpan: Konfigurasi Papan Anda Bermasalah!')
+        alert('Gagal simpan: Konfigurasi Papan Anda Bermasalah!'  + json.error)
       }
     } catch (err) {
       alert('Error: ' + err.message)

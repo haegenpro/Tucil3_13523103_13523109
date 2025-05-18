@@ -292,11 +292,9 @@ switch (algorithm) {
 
 const endTime = Date.now();
 const elapsedTime = endTime - startTime;
-console.log(`Waktu Eksekusi: ${elapsedTime} ms\n` +
-            `Jumlah Ekspansi: ${expansions}\n`);
 
+const path = [];
 if (solutionNode) {
-    const path = [];
     let node = solutionNode;
     while (node) {
         path.push(node);
@@ -324,3 +322,19 @@ if (solutionNode) {
 } else {
     console.log('No solution found');
 }
+
+const serializedPath = path.map((node, idx) => {
+  return {
+    step: idx + 1,
+    move: node.move,   
+    board: node.board.grid,         
+  }
+});
+
+const result = {
+  elapsedTime,
+  expansions,
+  solution: serializedPath
+}
+
+console.log(JSON.stringify(result))

@@ -388,4 +388,8 @@ export class Board {
             }
         }
     }
+
+    toMatrix() {
+    return this.grid.map(row => [...row])
+    }
 }
