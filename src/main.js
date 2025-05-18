@@ -190,10 +190,10 @@ function parseInput(input) {
                 let exitRow = r;
                 let exitCol = c;
 
-                if (r === 0) exitOrientation = 'V'; // top edge, vertical exit
-                else if (r === A) exitOrientation = 'V'; // bottom edge, vertical exit
-                else if (c === 0) exitOrientation = 'H'; // left edge, horizontal exit
-                else if (c === B) exitOrientation = 'H'; // right edge, horizontal exit
+                if (r === 0) exitOrientation = 'V';
+                else if (r === A) exitOrientation = 'V';
+                else if (c === 0) exitOrientation = 'H';
+                else if (c === B) exitOrientation = 'H';
 
                 if (exitOrientation === 'V') {
                     if (r === 0) exitRow = -1;
@@ -313,11 +313,11 @@ if (solutionNode) {
         let direction = '';
 
         if (car.orientation === 'H') {
-            direction = move.delta > 0 ? 'kanan' : 'kiri';
+            direction = move.delta > 0 ? 'right' : 'left';
         } else {
-            direction = move.delta > 0 ? 'bawah' : 'atas';
+            direction = move.delta > 0 ? 'down' : 'up';
         }
-        console.log(`\nGerakan ${i}: ${move.id}-${direction}`);
+        console.log(`\nMove ${i}: ${move.id}-${direction}`);
         node.board.printBoard(move);
     });
     

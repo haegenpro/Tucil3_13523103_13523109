@@ -3,16 +3,12 @@ export class Node {
         this.board  = board;
         this.parent = parent;
         this.move   = move;
-
         if (parent) {
             const stepCost = Math.abs(move.delta);
             this.g = parent.g + stepCost;
-        } else {
-            this.g = 0;
-        }
+        } else this.g = 0;
         this.heuristic = heuristic;
         this.h = board.getHeuristic(heuristic);
-
         this.f = this.g + this.h;
     }
 
