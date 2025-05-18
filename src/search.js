@@ -19,7 +19,7 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
             return { node: null, expansions };
         }
         if (current.isGoal()) {
-            console.log(`UCS goal found after ${expansions} expansions (cost: ${current.g})`);
+            
             return { node: current, expansions };
         }
 
@@ -55,7 +55,7 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
             return { node: null, expansions };
         }
         if (current.isGoal()) {
-            console.log(`GBFS goal found after ${expansions} expansions (h=${current.h.toFixed(2)})`);
+            
             return { node: current, expansions };
         }
 
@@ -91,7 +91,7 @@ export function aStarSearch(startBoard, heuristic = 1) {
             return { node: null, expansions };
         }
         if (current.isGoal()) {
-            console.log(`A* goal found after ${expansions} expansions (cost: ${current.g})`);
+            
             return { node: current, expansions };
         }
 
@@ -126,7 +126,7 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
                 return { node: null, expansions };
             }
             if (node.isGoal()) {
-                console.log(`BeamSearch goal found after ${expansions} expansions (cost: ${node.g})`);
+                
                 return { node, expansions };
             }
 

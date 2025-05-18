@@ -2,8 +2,12 @@ import fs from 'fs';
 import { Board, Car } from './board.js';
 import { uniformCostSearch, greedyBestFirstSearch, aStarSearch, beamSearch} from './search.js';
 import { error } from 'console';
+import { parse } from 'path';
 
 const inputFile = process.argv[2];
+const algoArg     = process.argv[3];
+const heurArg     = process.argv[4];
+
 if (!inputFile) {
   console.error('Usage: node main.js <inputfile.txt>');
   process.exit(1);
@@ -249,20 +253,12 @@ function parseInput(input) {
     return new Board(grid.length, grid[0].length, cars, exitPos, exitOrientation);
 }
 
-// Start time
-console.log("Input file location:");
-// User inputs the file location
 
-console.log("Choose an algorithm:");
-let algorithm = 3;
-console.log("Choose a heuristic:");
-let heuristic = 2;
-const startTime = Date.now();
-
+const algorithm = parseInt(algoArg, 10);
+const heuristic = parseInt(heurArg, 10);
 const board = parseInput(fileContent);
-console.log('Papan Awal:');
-board.printBoard();
 
+const startTime = Date.now();
 let solutionNode = null;
 let expansions = 0;
 
@@ -296,8 +292,8 @@ switch (algorithm) {
 
 const endTime = Date.now();
 const elapsedTime = endTime - startTime;
-console.log(`\nTotal time: ${elapsedTime} ms`);
-console.log(`Total nodes iterated: ${expansions}`);
+console.log(`Waktu Eksekusi: ${elapsedTime} ms\n` +
+            `Jumlah Ekspansi: ${expansions}\n`);
 
 if (solutionNode) {
     const path = [];
