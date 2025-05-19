@@ -5,8 +5,8 @@ import { error } from 'console';
 import { parse } from 'path';
 
 const inputFile = process.argv[2];
-const algoArg     = process.argv[3];
-const heurArg     = process.argv[4];
+const algoArg = process.argv[3];
+const heurArg = process.argv[4];
 
 if (!inputFile) {
   console.error('Usage: node main.js <inputfile.txt>');
@@ -23,7 +23,6 @@ function parseInput(input) {
         throw new Error(`Baris 1 harus “A B”, tapi anda menginput: "${lines[0]}"`);
     }
     let [A, B] = lines[0].split(' ').map(Number);
-
 
     const singleIntRe = /^(\d+)$/;
     if (!singleIntRe.test(lines[1].trim())) {
@@ -53,22 +52,20 @@ function parseInput(input) {
     for (let i = 0; i < boardLinesValidate.length; i++) {
         const row = boardLinesValidate[i];   
         if (exitOrientationValidate === 'V' && (i === 0 || i === boardLinesValidate.length - 1)) {
-        if (row !== 'K' && i == boardLinesValidate.length - 1) {
-            throw new Error(`Baris ${i + 3} untuk exit vertikal harus hanya 'K', tapi: "${row}"`);
-        }
+            if (row !== 'K' && i == boardLinesValidate.length - 1) {
+                throw new Error(`Baris ${i + 3} untuk exit vertikal harus hanya 'K', tapi: "${row}"`);
+            }
             if(row == 'K') break;
         }
         const hasExit = row.includes('K');
         const expectedLen = hasExit ? B + 1 : B;
         if (row.length !== expectedLen) {
-        throw new Error(
-            `Baris konfigurasi ke-${i + 3} panjangnya harus ${expectedLen}` +
-            `${hasExit ? ` (termasuk 'K')` : ''}, tapi ${row.length}.`
-        );
+            throw new Error(
+                `Baris konfigurasi ke-${i + 3} panjangnya harus ${expectedLen}` + `${hasExit ? ` (termasuk 'K')` : ''}, tapi ${row.length}.`
+            );
         }
         if (!validCharRe.test(row)) {
-        throw new Error(`Karakter tidak valid di baris ${i + 3}: "${row}".` +
-            ` Hanya diperbolehkan '.', 'P', 'K', dan huruf lainnya.`);
+            throw new Error(`Karakter tidak valid di baris ${i + 3}: "${row}".` + ` Hanya diperbolehkan '.', 'P', 'K', dan huruf lainnya.`);
         }
     }
 
@@ -94,9 +91,9 @@ function parseInput(input) {
             continue;
         }
         for (let c = 0; c < row.length; c++) {
-        const ch = row[c];
-        if (ch === 'P') pCoords.push([r, c]);
-        if (ch === 'K') exitCoords.push([r, c]);
+            const ch = row[c];
+            if (ch === 'P') pCoords.push([r, c]);
+            if (ch === 'K') exitCoords.push([r, c]);
         }
     }
     if (pCoords.length < 2) {
@@ -117,12 +114,12 @@ function parseInput(input) {
     if (orientation === 'H') {
         const pr = [...pRows][0];
         if (er !== pr || (ec !== 0 && ec !== B)) {
-        throw new Error(`Exit 'K' harus di baris ${pr} dan di kolom 0 atau ${B}, tapi di (${er},${ec}).`);
+            throw new Error(`Exit 'K' harus di baris ${pr} dan di kolom 0 atau ${B}, tapi di (${er},${ec}).`);
         }
     } else {
         const pc = [...pCols][0];
         if (ec !== pc || (er !== 0 && er !== A)) {
-        throw new Error(`Exit 'K' harus di kolom ${pc} dan di baris 0 atau ${A}, tapi di (${er},${ec}).`);
+            throw new Error(`Exit 'K' harus di kolom ${pc} dan di baris 0 atau ${A}, tapi di (${er},${ec}).`);
         }
     }
 
@@ -156,14 +153,14 @@ function parseInput(input) {
         
         const ori = rows.size === 1 ? 'H' : 'V';
         for (let i = 1; i < coords.length; i++) {
-        const [pr, pc] = coords[i - 1];
-        const [cr, cc] = coords[i];
-        if (ori === 'H' && (cr !== pr || cc !== pc + 1)) {
-            throw new Error(`Piece '${id}' tidak kontigu horizontal di ${JSON.stringify(coords)}.`);
-        }
-        if (ori === 'V' && (cc !== pc || cr !== pr + 1)) {
-            throw new Error(`Piece '${id}' tidak kontigu vertikal di ${JSON.stringify(coords)}.`);
-        }
+            const [pr, pc] = coords[i - 1];
+            const [cr, cc] = coords[i];
+            if (ori === 'H' && (cr !== pr || cc !== pc + 1)) {
+                throw new Error(`Piece '${id}' tidak kontigu horizontal di ${JSON.stringify(coords)}.`);
+            }
+            if (ori === 'V' && (cc !== pc || cr !== pr + 1)) {
+                throw new Error(`Piece '${id}' tidak kontigu vertikal di ${JSON.stringify(coords)}.`);
+            }
         }
     }
 
@@ -315,12 +312,8 @@ if (solutionNode) {
         } else {
             direction = move.delta > 0 ? 'down' : 'up';
         }
-        // console.log(`\nMove ${i}: ${move.id}-${direction}`);
-        // node.board.printBoard(move);
     });
     
-} else {
-    console.log('No solution found');
 }
 
 const serializedPath = path.map((node, idx) => {

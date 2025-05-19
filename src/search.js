@@ -22,7 +22,6 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
             
             return { node: current, expansions };
         }
-
         explored.add(current.serialize());
         for (const nbr of current.getNeighbors()) {
             const key = nbr.serialize();
@@ -32,8 +31,6 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
             }
         }
     }
-
-    
     return { node: null, expansions };
 }
 
@@ -58,7 +55,6 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
             
             return { node: current, expansions };
         }
-
         const serialized = current.serialize();
         if (explored.has(serialized)) continue;
         explored.add(serialized);
@@ -68,8 +64,6 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
             if (!explored.has(key)) pq.enqueue(nbr);
         }
     }
-
-    
     return { node: null, expansions };
 }
 
@@ -94,7 +88,6 @@ export function aStarSearch(startBoard, heuristic = 1) {
             
             return { node: current, expansions };
         }
-
         explored.add(current.serialize());
         for (const nbr of current.getNeighbors()) {
             const key = nbr.serialize();
@@ -104,8 +97,6 @@ export function aStarSearch(startBoard, heuristic = 1) {
             }
         }
     }
-
-    
     return { node: null, expansions };
 }
 
@@ -136,12 +127,9 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
                 if (!explored.has(key)) successors.push(nbr);
             }
         }
-
         if (successors.length === 0) break;
         successors.sort((a, b) => a.f - b.f);
         beam = successors.slice(0, beamWidth);
     }
-
-    
     return { node: null, expansions };
 }
