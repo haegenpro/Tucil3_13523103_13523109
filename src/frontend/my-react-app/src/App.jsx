@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './index.css'
 
 function App() {
@@ -10,6 +10,10 @@ function App() {
   const [nValue, setNValue] = useState(1)
 
   const [solverOutput, setSolverOutput] = useState('')
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [speed, setSpeed]       = useState(1000)
+  const [currentIdx, setCurrentIdx] = useState(0)
+  const intervalRef = useRef(null)
 
   const handleAlgoritmaChange = (event) => {
     setSelectedAlgoritma(event.target.value);
@@ -45,6 +49,7 @@ function App() {
         alert('Berhasil menyimpan testWeb.txt!')
         const data = JSON.parse(json.result)
         setSolverOutput(data)
+        setCurrentIdx(0)
       } else {
         alert('Gagal simpan: Konfigurasi Papan Anda Bermasalah!'  + json.error)
       }
@@ -52,6 +57,28 @@ function App() {
       alert('Error: ' + err.message)
     }
   }
+
+  useEffect(() => {
+    if (solverOutput?.solution) {
+      setCurrentIdx(0)
+    }
+  }, [solverOutput])
+
+  useEffect(() => {
+    clearInterval(intervalRef.current)
+
+    if (isPlaying && solverOutput?.solution) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIdx(i => {
+          const len = solverOutput.solution.length
+          return (i + 1) % len
+        })
+      }, speed)
+    }
+
+    return () => clearInterval(intervalRef.current)
+  }, [isPlaying, speed, solverOutput])
+  
 
   return (
     <div className="flex h-screen">
@@ -168,38 +195,74 @@ function App() {
         Cari solusi
       </button>
 
+      {/* ---Animation Controls--- */}
+        <div className="mt-4 space-y-2">
+          <label className="block text-sm font-medium">
+            Speed: {speed} ms/step
+          </label>
+          <input
+            type="range"
+            min="200"
+            max="2000"
+            step="100"
+            value={speed}
+            onChange={e => setSpeed(Number(e.target.value))}
+            className="w-full"
+          />
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsPlaying(p => !p)}
+              className="flex-1 px-3 py-1 bg-blue-600 text-white rounded"
+            >
+              {isPlaying ? '⏸ Pause' : '▶️ Play'}
+            </button>
+            <button
+              onClick={() => {
+                setIsPlaying(false)
+                setCurrentIdx(0)
+              }}
+              className="flex-1 px-3 py-1 bg-red-600 text-white rounded"
+            >
+              ■ Restart
+            </button>
+          </div>
+        </div>
+
       </aside>
 
       {/* Main content 60% */}
       <main className="w-3/5 p-10 overflow-auto font-mono bg-white flex justify-center">
-        {solverOutput && (
+         {solverOutput && (
           <div>
             <p>⏱ Waktu Eksekusi: {solverOutput.elapsedTime} ms</p>
             <p>🔍 Jumlah Ekspansi: {solverOutput.expansions}</p>
 
-            {solverOutput.solution.map(({ step, move, board }) => (
-              <div key={step} className="mb-4">
-                <h4 className="font-semibold">
+            {(() => {
+              const { step, move, board } =
+                solverOutput.solution[currentIdx] || {}
+              return (
+                <div key={step} className="mb-4">
+                  <h4 className="font-semibold">
                     Step {step}
                     {move
                       ? `: ${move.id}-${
                           move.delta > 0
-                            ? (board[0].length > move.delta ? 'right' : 'down')
-                            : (move.delta < 0 ? 'left' : 'up')
+                            ? board[0].length > move.delta
+                              ? 'right'
+                              : 'down'
+                            : 'left'
                         }`
                       : ' (initial)'}
-                </h4>
-                <pre className="bg-gray-100 p-2 rounded">
-                  {board
-                    .map(row =>
-                      row
-                        .map(cell => (cell === null ? '.' : cell))
-                        .join(' ')
-                    )
-                    .join('\n')}
-                </pre>
-              </div>
-            ))}
+                  </h4>
+                  <pre className="bg-gray-100 p-2 rounded">
+                    {board
+                      .map(row => row.map(c => (c ?? '.')).join(' '))
+                      .join('\n')}
+                  </pre>
+                </div>
+              )
+            })()}
           </div>
         )}
       </main>
