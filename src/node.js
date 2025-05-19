@@ -12,14 +12,6 @@ export class Node {
         this.f = this.g + this.h;
     }
 
-    priorityValue(useAstar = false) {
-        return useAstar ? this.f : this.g;
-    }
-
-    printBoard() {
-        return this.board.printBoard();
-    }
-
     serialize() {
         const s = this.board.serialize();
         return s;

@@ -39,11 +39,6 @@ export class Board {
         });
     }
 
-    addCar(car) {
-        this.cars.push(car);
-        this._placeCars();
-    }
-
     moveCar(id, delta) {
         const car = this.cars.find(c => c.id === id);
         if (!car) {
@@ -137,7 +132,7 @@ export class Board {
                 if (this.grid[r][col]) blockers++;
             }
         }
-        return distance + (blockers * 3);
+        return distance + (blockers * 2);
     }
 
     countRecursiveBlockers() {
@@ -258,24 +253,95 @@ export class Board {
         return weight;
     }
 
+    isCarBlockingTarget(car) {
+        const target = this.cars.find(c => c.isTarget);
+        if (!target) return false;
+
+        let frontIdx, exitIdx;
+
+        if (this.exitOrientation === 'H') {
+            frontIdx = this.exit.col < 0 
+                ? target.col 
+                : target.col + target.length - 1;
+            exitIdx = this.exit.col;
+
+            if (car.row !== target.row) return false;
+
+            const minC = Math.min(frontIdx, exitIdx);
+            const maxC = Math.max(frontIdx, exitIdx);
+            const carStart = car.col;
+            const carEnd = car.col + car.length - 1;
+
+            return !(carEnd < minC || carStart > maxC);
+        } else {
+            frontIdx = this.exit.row < 0 
+                ? target.row 
+                : target.row + target.length - 1;
+            exitIdx = this.exit.row;
+
+            if (car.col !== target.col) return false;
+
+            const minR = Math.min(frontIdx, exitIdx);
+            const maxR = Math.max(frontIdx, exitIdx);
+            const carStart = car.row;
+            const carEnd = car.row + car.length - 1;
+
+            return !(carEnd < minR || carStart > maxR);
+        }
+    }
+
+    minStepsToFree(car) {
+        if (!this.isCarBlockingTarget(car)) {
+            return 0;
+        }
+
+        const maxRow = this.height;
+        const maxCol = this.width;
+
+        if (car.orientation === 'H') {
+            const target = this.cars.find(c => c.isTarget);
+            let frontIdx = this.exit.col < 0 
+                ? target.col 
+                : target.col + target.length - 1;
+            let exitIdx = this.exit.col;
+
+            const minC = Math.min(frontIdx, exitIdx);
+            const maxC = Math.max(frontIdx, exitIdx);
+            let movesLeft = car.col + car.length - 1 - minC + 1;
+            movesLeft = movesLeft < 0 ? 0 : movesLeft;
+
+            let movesRight = maxC - car.col + 1;
+            movesRight = movesRight < 0 ? 0 : movesRight;
+            movesLeft = Math.min(movesLeft, car.col);
+            movesRight = Math.min(movesRight, maxCol - (car.col + car.length));
+            return Math.min(movesLeft, movesRight);
+        }
+        else {
+            const target = this.cars.find(c => c.isTarget);
+            let frontIdx = this.exit.row < 0 
+                ? target.row 
+                : target.row + target.length - 1;
+            let exitIdx = this.exit.row;
+
+            const minR = Math.min(frontIdx, exitIdx);
+            const maxR = Math.max(frontIdx, exitIdx);
+            let movesUp = car.row + car.length - 1 - minR + 1;
+            movesUp = movesUp < 0 ? 0 : movesUp;
+            let movesDown = maxR - car.row + 1;
+            movesDown = movesDown < 0 ? 0 : movesDown;
+            movesUp = Math.min(movesUp, car.row);
+            movesDown = Math.min(movesDown, maxRow - (car.row + car.length));
+
+            return Math.min(movesUp, movesDown);
+        }
+    }
+
     clone() {
         const carsCopy = this.cars.map(
         ({ id, row, col, length, orientation, isTarget }) =>
             new Car(id, row, col, length, orientation, isTarget)
         );
         return new Board(this.height, this.width, carsCopy, this.exit, this.exitOrientation);
-    }
-
-    reset() {
-        this.cars.forEach(car => {
-            car.row = -1;
-            car.col = -1;
-        });
-        for (let r = 0; r < this.height; r++) {
-            for (let c = 0; c < this.width; c++) {
-                this.grid[r][c] = null;
-            }
-        }
     }
 
     serialize() {
