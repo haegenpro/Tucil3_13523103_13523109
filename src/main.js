@@ -322,7 +322,8 @@ if(path.length !== 0) {
     return {
         step: idx + 1,
         move: node.move,   
-        board: node.board.grid,         
+        board: node.board.grid,
+        cars: node.board.cars,         
     }
     });
 

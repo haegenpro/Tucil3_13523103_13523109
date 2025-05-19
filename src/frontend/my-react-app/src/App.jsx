@@ -50,6 +50,7 @@ function App() {
         const data = JSON.parse(json.result)
         setSolverOutput(data)
         setCurrentIdx(0)
+        console.log("Solver Output:", data)
       } else {
         alert("Gagal simpan: Konfigurasi Papan Anda Bermasalah!" + json.error)
       }
@@ -372,7 +373,7 @@ function App() {
                 </div>
 
                 {(() => {
-                  const { step, move, board } = solverOutput.solution[currentIdx] || {}
+                  const { step, move, board, cars } = solverOutput.solution[currentIdx] || {}
                   return (
                     <div key={step} className="bg-white/70 p-4 rounded-lg shadow-sm">
                       <div className="flex items-center mb-3">
@@ -380,7 +381,7 @@ function App() {
                         {move && (
                           <span className = "px-2">
                           <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">
-                            {move.id}-{move.delta > 0 ? (board[0].length > move.delta ? "right" : "down") : "left"}
+                            {move.id}-{move.delta > 0 ? (cars.find(c => c.id === move.id)?.orientation==="H" ? "right" : "down") : (cars.find(c=> c.id === move.id)?.orientation==="H" ? "left" : "up")}
                           </span>
                           </span>
                         )}
@@ -388,7 +389,24 @@ function App() {
                       <pre className="bg-white p-3 rounded-md border border-gray-200 overflow-x-auto text-gray-700 text-sm">
                         {board.map((row) => row.map((c) => c ?? ".").join(" ")).join("\n")}
                       </pre>
+
+                      {/* Slider */}
+                      <div className="mt-4">
+                        <input
+                          type="range"
+                          min={0}
+                          max={solverOutput.solution.length - 1}
+                          value={currentIdx}
+                          onChange={e => setCurrentIdx(Number(e.target.value))}
+                          className="w-full accent-purple-600"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>0</span>
+                          <span>{solverOutput.solution.length - 1}</span>
+                        </div>
+                      </div>
                     </div>
+
                   )
                 })()}
               </div>
