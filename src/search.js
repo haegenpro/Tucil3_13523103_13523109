@@ -8,16 +8,16 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    const MAX_EXPANSIONS = 100000;
+    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
 
-        if (expansions > MAX_EXPANSIONS) {
+        /*if (expansions > MAX_EXPANSIONS) {
             
             return { node: null, expansions };
-        }
+        }*/
         if (current.isGoal()) {
             
             return { node: current, expansions };
@@ -41,16 +41,16 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    const MAX_EXPANSIONS = 100000;
+    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
 
-        if (expansions > MAX_EXPANSIONS) {
+        /*if (expansions > MAX_EXPANSIONS) {
             
             return { node: null, expansions };
-        }
+        }*/
         if (current.isGoal()) {
             
             return { node: current, expansions };
@@ -74,16 +74,16 @@ export function aStarSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    const MAX_EXPANSIONS = 100000;
+    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
 
-        if (expansions > MAX_EXPANSIONS) {
+        /*if (expansions > MAX_EXPANSIONS) {
             
             return { node: null, expansions };
-        }
+        }*/
         if (current.isGoal()) {
             
             return { node: current, expansions };
@@ -105,17 +105,17 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
     let beam = [start];
     const explored = new Set();
     let expansions = 0;
-    const MAX_EXPANSIONS = 100000;
+    //const MAX_EXPANSIONS = 100000;
 
     while (beam.length > 0) {
         const successors = [];
 
         for (const node of beam) {
             expansions++;
-            if (expansions > MAX_EXPANSIONS) {
+            /*if (expansions > MAX_EXPANSIONS) {
                 
                 return { node: null, expansions };
-            }
+            }*/
             if (node.isGoal()) {
                 
                 return { node, expansions };
