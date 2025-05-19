@@ -132,7 +132,7 @@ export class Board {
                 if (this.grid[r][col]) blockers++;
             }
         }
-        return distance + (blockers * 2);
+        return distance + blockers;
     }
 
     countRecursiveBlockers() {
@@ -197,7 +197,7 @@ export class Board {
             const car = this.cars.find(c => c.id === id);
             movesNeeded += this.minStepsToFree(car);
         }
-        return dist + movesNeeded;
+        return distance + movesNeeded;
     }
 
     getHeuristic(h) {
@@ -353,19 +353,30 @@ export class Board {
 
     isGoal() {
         const target = this.cars.find(c => c.isTarget);
-        let frontIdx, exitIdx;
+        if (!target) return false;
+
         if (this.exitOrientation === 'H') {
-            frontIdx = exitIdx < 0
-                ? target.col
-                : target.col + target.length - 1;
-            exitIdx = exitIdx < 0 ? 0 : this.exit.col - 1;
+            const exitCol = this.exit.col;
+            const targetEndCol = target.col + target.length - 1;
+            if (target.row !== this.exit.row) return false;
+            
+            if (exitCol < 0) {
+                return target.col === 0;
+            } else if (exitCol >= this.width) {
+                return targetEndCol === this.width - 1;
+            }
         } else {
-            frontIdx = exitIdx < 0
-                ? target.row
-                : target.row + target.length - 1;
-            exitIdx = exitIdx < 0 ? 0 : this.exit.row - 1;
+            const exitRow = this.exit.row;
+            const targetEndRow = target.row + target.length - 1;
+            if (target.col !== this.exit.col) return false;
+            
+            if (exitRow < 0) {
+                return target.row === 0;
+            } else if (exitRow >= this.height) {
+                return targetEndRow === this.height - 1;
+            }
         }
-        return frontIdx === exitIdx && (this.exitOrientation === 'H' ? target.row === this.exit.row : target.col === this.exit.col);
+        return false;
     }
 
     getSuccessorMoves() {
