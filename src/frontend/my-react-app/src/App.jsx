@@ -109,7 +109,7 @@ function App() {
               <path d="M3 9h18" />
               <path d="M3 15h18" />
             </svg>
-            Rush Hour
+            Rush Hour Solver
           </h2>
 
           <div className="space-y-4">

@@ -1,8 +1,5 @@
-6 6
-12
-ABB.F.
-ACD.FM
-ACDPPMK
-EEEG.M
-..HGLL
-IIHJJ.
+3 3
+1
+...
+BBB
+PPPK
