@@ -145,9 +145,9 @@ function App() {
                     disabled={isHeuristikDisabled}
                     className={`block w-full pl-2 pr-8 py-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 rounded-md transition-all ${isHeuristikDisabled ? "bg-gray-100 text-gray-500" : ""}`}
                   >
-                    <option value="1">heuristik</option>
-                    <option value="2">heuristik2</option>
-                    <option value="3">heuristik3</option>
+                    <option value="1">Direct Blockers</option>
+                    <option value="2">Recurisve Blockers</option>
+                    <option value="3">MinSteps</option>
                   </select>
                 </div>
               </div>
@@ -375,11 +375,13 @@ function App() {
                   const { step, move, board } = solverOutput.solution[currentIdx] || {}
                   return (
                     <div key={step} className="bg-white/70 p-4 rounded-lg shadow-sm">
-                      <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center mb-3">
                         <h4 className="font-semibold text-sm text-gray-800">Step {step}</h4>
                         {move && (
+                          <span className = "px-2">
                           <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">
                             {move.id}-{move.delta > 0 ? (board[0].length > move.delta ? "right" : "down") : "left"}
+                          </span>
                           </span>
                         )}
                       </div>
