@@ -233,11 +233,11 @@ function App() {
 
       {/* Main content 60% */}
       <main className="w-3/5 p-10 overflow-auto font-mono bg-white flex justify-center">
-         {solverOutput && (
+      {solverOutput ? (
+        solverOutput.solution ? (
           <div>
             <p>⏱ Waktu Eksekusi: {solverOutput.elapsedTime} ms</p>
             <p>🔍 Jumlah Ekspansi: {solverOutput.expansions}</p>
-
             {(() => {
               const { step, move, board } =
                 solverOutput.solution[currentIdx] || {}
@@ -264,8 +264,13 @@ function App() {
               )
             })()}
           </div>
-        )}
-      </main>
+        ) : (
+          <div className="text-center text-gray-500 text-lg">
+            Tidak Ada Solusi
+          </div>
+        )
+      ) : null}
+    </main>
     </div>
   )
 }

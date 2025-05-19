@@ -1,8 +1,8 @@
 6 6
-9
- .AAA..
- ..BC..
-KD.BCPP
- DEB...
- DEFFGH
- ..IIGH
+12
+ ..AAAB
+ .CDD.B
+KECFPP.
+ ECFGHH
+ EIIGJ.
+ LLMMJ.

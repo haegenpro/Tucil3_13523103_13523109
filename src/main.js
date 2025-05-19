@@ -316,18 +316,28 @@ if (solutionNode) {
     
 }
 
-const serializedPath = path.map((node, idx) => {
-  return {
-    step: idx + 1,
-    move: node.move,   
-    board: node.board.grid,         
-  }
-});
+let result;
+if(path.length !== 0) {
+    const serializedPath = path.map((node, idx) => {
+    return {
+        step: idx + 1,
+        move: node.move,   
+        board: node.board.grid,         
+    }
+    });
 
-const result = {
-  elapsedTime,
-  expansions,
-  solution: serializedPath
+    result = {
+        elapsedTime,
+        expansions,
+        solution: serializedPath
+    }
+}
+else {
+    result = {
+        elapsedTime,
+        expansions,
+        solution: null
+    }
 }
 
 console.log(JSON.stringify(result))
