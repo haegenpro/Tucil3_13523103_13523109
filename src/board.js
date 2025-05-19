@@ -92,16 +92,11 @@ export class Board {
 
     isGoal() {
         const target = this.cars.find(c => c.isTarget);
-        console.log(target);
         if (!target) return false;
-        console.log(target.row, target.col, target.length);
-        console.log(this.exit.row, this.exit.col);
 
         if (this.exitOrientation === 'H') {
-            console.log(this.exit.col, target.col, target.length);
             return this.exit.col === -1 ? target.col === 0 && target.row === this.exit.row : target.col + target.length === this.exit.col && target.row === this.exit.row;
         } else {
-            console.log(this.exit.row, target.row, target.length);
             return this.exit.row === -1 ? target.row === 0 && target.col === this.exit.col : target.row + target.length === this.exit.row && target.col === this.exit.col;
         }
     }
