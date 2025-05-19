@@ -8,25 +8,21 @@ export function uniformCostSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
-
-        /*if (expansions > MAX_EXPANSIONS) {
-            
-            return { node: null, expansions };
-        }*/
+        
+        const key = current.serialize();
+        if (explored.has(key)) continue;
+        
         if (current.isGoal()) {
-            
             return { node: current, expansions };
         }
-        explored.add(current.serialize());
+        explored.add(key);
         for (const nbr of current.getNeighbors()) {
-            const key = nbr.serialize();
-            if (!explored.has(key)) {
-                explored.add(key);
+            const nbrKey = nbr.serialize();
+            if (!explored.has(nbrKey)) {
                 pq.enqueue(nbr);
             }
         }
@@ -41,27 +37,24 @@ export function greedyBestFirstSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
 
-        /*if (expansions > MAX_EXPANSIONS) {
-            
-            return { node: null, expansions };
-        }*/
+        const key = current.serialize();
+        if (explored.has(key)) continue;
+        
         if (current.isGoal()) {
-            
             return { node: current, expansions };
         }
-        const serialized = current.serialize();
-        if (explored.has(serialized)) continue;
-        explored.add(serialized);
+        explored.add(key);
 
         for (const nbr of current.getNeighbors()) {
-            const key = nbr.serialize();
-            if (!explored.has(key)) pq.enqueue(nbr);
+            const nbrKey = nbr.serialize();
+            if (!explored.has(nbrKey)) {
+                pq.enqueue(nbr);
+            }
         }
     }
     return { node: null, expansions };
@@ -74,25 +67,21 @@ export function aStarSearch(startBoard, heuristic = 1) {
 
     const explored = new Set();
     let expansions = 0;
-    //const MAX_EXPANSIONS = 100000;
 
     while (!pq.isEmpty()) {
         const current = pq.dequeue();
         expansions++;
-
-        /*if (expansions > MAX_EXPANSIONS) {
-            
-            return { node: null, expansions };
-        }*/
+        
+        const key = current.serialize();
+        if (explored.has(key)) continue;
+        
         if (current.isGoal()) {
-            
             return { node: current, expansions };
         }
-        explored.add(current.serialize());
+        explored.add(key);
         for (const nbr of current.getNeighbors()) {
-            const key = nbr.serialize();
-            if (!explored.has(key)) {
-                explored.add(key);
+            const nbrKey = nbr.serialize();
+            if (!explored.has(nbrKey)) {
                 pq.enqueue(nbr);
             }
         }
@@ -105,26 +94,24 @@ export function beamSearch(startBoard, beamWidth = 50, heuristic = 1) {
     let beam = [start];
     const explored = new Set();
     let expansions = 0;
-    //const MAX_EXPANSIONS = 100000;
 
     while (beam.length > 0) {
         const successors = [];
 
         for (const node of beam) {
             expansions++;
-            /*if (expansions > MAX_EXPANSIONS) {
-                
-                return { node: null, expansions };
-            }*/
+            const key = node.serialize();
+            if (explored.has(key)) continue;
+            
             if (node.isGoal()) {
-                
                 return { node, expansions };
             }
-
-            explored.add(node.serialize());
+            explored.add(key);
             for (const nbr of node.getNeighbors()) {
-                const key = nbr.serialize();
-                if (!explored.has(key)) successors.push(nbr);
+                const nbrKey = nbr.serialize();
+                if (!explored.has(nbrKey)) {
+                    successors.push(nbr);
+                }
             }
         }
         if (successors.length === 0) break;
