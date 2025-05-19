@@ -1,5 +1,7 @@
-3 3
-1
-...
-PPPK
-BBB
+5 4
+4
+AAC.
+PPCBK
+..CB
+...B
+..DD
