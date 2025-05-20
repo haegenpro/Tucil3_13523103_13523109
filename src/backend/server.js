@@ -36,9 +36,6 @@ app.post('/api/save-config', (req, res) => {
     const scriptPath = path.resolve(__dirname, '../main.js')
     const scriptTargetFile = path.resolve(__dirname, '../../test/testWeb.txt')
 
-    console.log('Spawning:', 'node', scriptPath, scriptTargetFile, algorithm, heuristic)
-    console.log('algorithm:', algorithm)
-    console.log('heuristic:', heuristic)
     const child = spawn('node', [
         scriptPath,
         scriptTargetFile,

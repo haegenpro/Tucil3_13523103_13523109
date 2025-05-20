@@ -50,7 +50,6 @@ function App() {
         const data = JSON.parse(json.result)
         setSolverOutput(data)
         setCurrentIdx(0)
-        console.log("Solver Output:", data)
       } else {
         alert("Gagal simpan: Konfigurasi Papan Anda Bermasalah!" + json.error)
       }
