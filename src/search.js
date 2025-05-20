@@ -89,7 +89,7 @@ export function aStarSearch(startBoard, heuristic = 1) {
     return { node: null, expansions };
 }
 
-export function beamSearch(startBoard, beamWidth = 200, heuristic = 1) {
+export function beamSearch(startBoard, beamWidth = 1000, heuristic = 1) {
     const start = new Node(startBoard, null, null, heuristic);
     let beam = [start];
     const explored = new Set();

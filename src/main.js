@@ -273,7 +273,7 @@ switch (algorithm) {
         break;
     }
     case 4: {
-        const result = beamSearch(board, 75, heuristic);
+        const result = beamSearch(board, 1000, heuristic);
         solutionNode = result.node;
         expansions   = result.expansions;
         break;
