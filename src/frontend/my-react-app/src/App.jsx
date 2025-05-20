@@ -147,7 +147,7 @@ function App() {
                     className={`block w-full pl-2 pr-8 py-1.5 text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 rounded-md transition-all ${isHeuristikDisabled ? "bg-gray-100 text-gray-500" : ""}`}
                   >
                     <option value="1">Direct Blockers</option>
-                    <option value="2">Recurisve Blockers</option>
+                    <option value="2">Recursive Blockers</option>
                     <option value="3">MinSteps</option>
                   </select>
                 </div>
