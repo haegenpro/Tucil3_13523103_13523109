@@ -3,7 +3,7 @@
 ## Overview
 This program solves the Rush Hour puzzle — a grid-based logic game where the objective is to move the primary vehicle (usually red) out of a traffic jam by sliding other vehicles out of the way. The program implements multiple pathfinding algorithms (Uniform Cost Search, Greedy Best First Search, A*, and Beam Search) to find the shortest sequence of moves to solve the puzzle.
 
-![Rush Hour Puzzle](https://i.imgur.com/example-image.png)
+![image](https://github.com/user-attachments/assets/471da0eb-4be6-4374-b070-db1a9e12397e)
 
 The program includes both backend logic for solving the puzzle and a React-based frontend GUI that allows users to input puzzle configurations, select algorithms and heuristics, and visualize the solution step-by-step.
 
