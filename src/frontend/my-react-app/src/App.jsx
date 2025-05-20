@@ -387,7 +387,15 @@ function App() {
                         )}
                       </div>
                       <pre className="bg-white p-3 rounded-md border border-gray-200 overflow-x-auto text-gray-700 text-sm">
-                        {board.map((row) => row.map((c) => c ?? ".").join(" ")).join("\n")}
+                        {board.map((row, rowIndex) => (
+                          <div key={rowIndex} className="whitespace-pre">
+                            {row.map((c, colIndex) => (
+                              <span key={`${rowIndex}-${colIndex}`} className={c === 'P' ? 'text-red-600' : 'text-gray-700'}>
+                                {c ?? "."}{" "}
+                              </span>
+                            ))}
+                          </div>
+                        ))}
                       </pre>
 
                       {/* Slider */}
